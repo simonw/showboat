@@ -1,4 +1,4 @@
-# showboat
+# Showboat
 
 Create executable demo documents that show and prove an agent's work.
 
