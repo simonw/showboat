@@ -4,6 +4,32 @@ Create executable demo documents that show and prove an agent's work.
 
 Showboat helps agents build markdown documents that mix commentary, executable code blocks, and captured output. These documents serve as both readable documentation and reproducible proof of work. A verifier can re-execute all code blocks and confirm the outputs still match.
 
+## Installation
+
+This Go tool can be installed directly [from PyPI](https://pypi.org/project/showboat/) using `pip` or `uv`.
+
+You can run it without installing it first using `uvx`:
+
+```bash
+uvx showboat --help
+```
+Or install it like this, then run `showboat --help`:
+```bash
+uv tool install showboat
+# or
+pip install showboat
+```
+
+You can also install the Go binary directly:
+```bash
+go install github.com/simonw/showboat@latest
+```
+Or run it without installation like this:
+```bash
+go run github.com/simonw/showboat@latest --help
+```
+Compiled binaries are available [on the releases page](https://github.com/simonw/showboat/releases). On macOS you may need to [follow these extra steps](https://support.apple.com/en-us/102445) to use those.
+
 ## Usage
 
 ```
