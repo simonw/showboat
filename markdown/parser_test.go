@@ -70,7 +70,7 @@ func TestParseCodeAndOutput(t *testing.T) {
 }
 
 func TestParseImageCodeAndOutput(t *testing.T) {
-	input := "```bash {image}\npython screenshot.py\n```\n\n```output-image\n![Screenshot](abc-2026-02-06.png)\n```\n"
+	input := "```bash {image}\npython screenshot.py\n```\n\n![Screenshot](abc-2026-02-06.png)\n"
 	blocks, err := Parse(strings.NewReader(input))
 	if err != nil {
 		t.Fatal(err)

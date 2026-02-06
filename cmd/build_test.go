@@ -158,7 +158,7 @@ func TestBuildImage(t *testing.T) {
 	if !strings.Contains(s, "```bash {image}") {
 		t.Errorf("expected image code block in file, got: %s", s)
 	}
-	if !strings.Contains(s, "```output-image") {
-		t.Errorf("expected output-image block in file, got: %s", s)
+	if !strings.Contains(s, "![") {
+		t.Errorf("expected image output in file, got: %s", s)
 	}
 }
