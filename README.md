@@ -104,3 +104,18 @@ print('Hello from Python')
 Hello from Python
 ```
 ````
+
+## Building the Python wheels
+
+The Python wheel versions are built using [go-to-wheel](https://github.com/simonw/go-to-wheel):
+
+```bash
+uvx go-to-wheel . \
+  --readme README.md \
+  --description "Create executable documents that demonstrate an agent's work" \
+  --author 'Simon Willison' \
+  --license Apache-2.0 \
+  --url https://github.com/simonw/showboat \
+  --set-version-var main.version \
+  --version 0.1.0
+```
