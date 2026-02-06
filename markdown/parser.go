@@ -64,13 +64,6 @@ func Parse(r io.Reader) ([]Block, error) {
 				i++ // past closing ```
 				blocks = append(blocks, OutputBlock{Content: content.String()})
 
-			case fence == "output-image":
-				// Expect a single line: ![alt](filename)
-				alt, filename := parseImageRef(lines[i])
-				i++ // past image reference line
-				i++ // past closing ```
-				blocks = append(blocks, ImageOutputBlock{AltText: alt, Filename: filename})
-
 			default:
 				// Code block. Check for {image} suffix.
 				lang := fence
@@ -96,11 +89,27 @@ func Parse(r io.Reader) ([]Block, error) {
 			continue
 		}
 
-		// Commentary block: accumulate lines until a fence or EOF.
+		// Image output line: ![alt](filename) on its own line.
+		if strings.HasPrefix(lines[i], "![") {
+			alt, filename := parseImageRef(lines[i])
+			if filename != "" {
+				i++
+				blocks = append(blocks, ImageOutputBlock{AltText: alt, Filename: filename})
+				skipSeparator()
+				continue
+			}
+		}
+
+		// Commentary block: accumulate lines until a fence, image output, or EOF.
 		var textLines []string
 		for i < len(lines) {
 			if strings.HasPrefix(lines[i], "```") {
 				break
+			}
+			if strings.HasPrefix(lines[i], "![") {
+				if _, fn := parseImageRef(lines[i]); fn != "" {
+					break
+				}
 			}
 			textLines = append(textLines, lines[i])
 			i++

@@ -61,7 +61,7 @@ func TestWriteImageCodeAndOutput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expected := "```bash {image}\npython screenshot.py\n```\n\n```output-image\n![Screenshot](abc-2026-02-06.png)\n```\n"
+	expected := "```bash {image}\npython screenshot.py\n```\n\n![Screenshot](abc-2026-02-06.png)\n"
 	if buf.String() != expected {
 		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
 	}

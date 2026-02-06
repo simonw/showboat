@@ -39,7 +39,7 @@ func writeBlock(w io.Writer, block Block) error {
 		_, err := fmt.Fprintf(w, "```output\n%s```\n", b.Content)
 		return err
 	case ImageOutputBlock:
-		_, err := fmt.Fprintf(w, "```output-image\n![%s](%s)\n```\n", b.AltText, b.Filename)
+		_, err := fmt.Fprintf(w, "![%s](%s)\n", b.AltText, b.Filename)
 		return err
 	default:
 		return fmt.Errorf("unknown block type: %T", block)
