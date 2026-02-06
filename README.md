@@ -38,7 +38,7 @@ showboat build <file> commentary [text]  Append commentary (text or stdin)
 showboat build <file> run <lang> [code]  Run code and capture output
 showboat build <file> image [script]     Run script, capture image output
 showboat verify <file> [--output <new>]  Re-run and diff all code blocks
-showboat extract <file>                  Emit build commands to recreate file
+showboat extract <file> [--filename <name>]  Emit build commands to recreate file
 ```
 
 Build subcommands accept input from stdin when the text/code argument is omitted:
@@ -71,12 +71,6 @@ showboat build demo.md run python "print('Hello from Python')"
 
 # Capture a screenshot
 showboat build demo.md image "python screenshot.py http://localhost:8000"
-
-# Verify the demo still works
-showboat verify demo.md
-
-# See what commands built the demo
-showboat extract demo.md
 ```
 
 This produces a markdown file like:
@@ -104,6 +98,37 @@ print('Hello from Python')
 Hello from Python
 ```
 ````
+
+## Verifying
+
+`showboat verify` re-executes every code block in a document and checks that the outputs still match:
+
+```bash
+showboat verify demo.md
+```
+
+## Extracting
+
+`showboat extract` emits the sequence of `showboat init` and `showboat build` commands that would recreate a document from scratch:
+
+```bash
+showboat extract demo.md
+```
+
+For the example above this would output:
+
+```
+showboat init demo.md 'Setting Up a Python Project'
+showboat build demo.md commentary 'First, let'\''s create a virtual environment.'
+showboat build demo.md run bash 'python3 -m venv .venv && echo '\''Done'\'''
+showboat build demo.md run python 'print('\''Hello from Python'\'')'
+```
+
+By default the commands reference the original filename. Use `--filename` to substitute a different filename in the emitted commands:
+
+```bash
+showboat extract demo.md --filename copy.md
+```
 
 ## Building the Python wheels
 

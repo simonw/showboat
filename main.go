@@ -112,10 +112,19 @@ func main() {
 
 	case "extract":
 		if len(args) < 2 {
-			fmt.Fprintln(os.Stderr, "usage: showboat extract <file>")
+			fmt.Fprintln(os.Stderr, "usage: showboat extract <file> [--filename <name>]")
 			os.Exit(1)
 		}
-		commands, err := cmd.Extract(args[1])
+		extractFile := args[1]
+		extractOutput := ""
+		extractRemaining := args[2:]
+		for i := 0; i < len(extractRemaining); i++ {
+			if extractRemaining[i] == "--filename" && i+1 < len(extractRemaining) {
+				extractOutput = extractRemaining[i+1]
+				i++
+			}
+		}
+		commands, err := cmd.Extract(extractFile, extractOutput)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
@@ -177,7 +186,7 @@ Usage:
   showboat build <file> run <lang> [code]  Run code and capture output
   showboat build <file> image [script]     Run script, capture image output
   showboat verify <file> [--output <new>]  Re-run and diff all code blocks
-  showboat extract <file>                  Emit build commands to recreate file
+  showboat extract <file> [--filename <name>]  Emit build commands to recreate file
 
 Global Options:
   --workdir <dir>   Set working directory for code execution (default: current)

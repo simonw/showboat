@@ -20,7 +20,7 @@ func TestExtract(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	commands, err := Extract(file)
+	commands, err := Extract(file, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,11 +32,39 @@ func TestExtract(t *testing.T) {
 	if !strings.Contains(commands[0], "showboat init") {
 		t.Errorf("expected init command, got: %s", commands[0])
 	}
+	if !strings.Contains(commands[0], file) {
+		t.Errorf("expected init command to contain filename %q, got: %s", file, commands[0])
+	}
 	if !strings.Contains(commands[1], "commentary") {
 		t.Errorf("expected commentary command, got: %s", commands[1])
 	}
 	if !strings.Contains(commands[2], "run bash") {
 		t.Errorf("expected run command, got: %s", commands[2])
+	}
+}
+
+func TestExtractOutputOverride(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test"); err != nil {
+		t.Fatal(err)
+	}
+
+	commands, err := Extract(file, "other.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(commands) != 1 {
+		t.Fatalf("expected 1 command, got %d: %v", len(commands), commands)
+	}
+
+	if !strings.Contains(commands[0], "other.md") {
+		t.Errorf("expected output filename in command, got: %s", commands[0])
+	}
+	if strings.Contains(commands[0], file) {
+		t.Errorf("expected original filename to be replaced, got: %s", commands[0])
 	}
 }
 
