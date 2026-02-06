@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/simonw/showcase/markdown"
+	"github.com/simonw/showboat/markdown"
 )
 
-// Init creates a new showcase document with a title and timestamp.
+// Init creates a new showboat document with a title and timestamp.
 // Returns an error if the file already exists.
 func Init(file, title string) error {
 	if _, err := os.Stat(file); err == nil {

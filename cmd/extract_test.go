@@ -29,7 +29,7 @@ func TestExtract(t *testing.T) {
 		t.Fatalf("expected 3 commands, got %d: %v", len(commands), commands)
 	}
 
-	if !strings.Contains(commands[0], "showcase init") {
+	if !strings.Contains(commands[0], "showboat init") {
 		t.Errorf("expected init command, got: %s", commands[0])
 	}
 	if !strings.Contains(commands[1], "commentary") {

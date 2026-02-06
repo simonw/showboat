@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	execpkg "github.com/simonw/showcase/exec"
-	"github.com/simonw/showcase/markdown"
+	execpkg "github.com/simonw/showboat/exec"
+	"github.com/simonw/showboat/markdown"
 )
 
 // Diff represents a mismatch between expected and actual output of a code block.

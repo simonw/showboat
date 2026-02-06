@@ -10,7 +10,7 @@ import (
 
 func TestFullWorkflow(t *testing.T) {
 	// Build the binary
-	tmpBin := filepath.Join(t.TempDir(), "showcase")
+	tmpBin := filepath.Join(t.TempDir(), "showboat")
 	build := exec.Command("go", "build", "-o", tmpBin, ".")
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build failed: %s\n%s", err, out)
@@ -61,7 +61,7 @@ func TestFullWorkflow(t *testing.T) {
 
 	// Extract should produce commands
 	out := runOutput(t, tmpBin, "extract", file)
-	if !strings.Contains(out, "showcase init") {
+	if !strings.Contains(out, "showboat init") {
 		t.Errorf("extract missing init: %s", out)
 	}
 	if !strings.Contains(out, "run bash") {

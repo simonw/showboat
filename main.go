@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/simonw/showcase/cmd"
+	"github.com/simonw/showboat/cmd"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	switch args[0] {
 	case "init":
 		if len(args) < 3 {
-			fmt.Fprintln(os.Stderr, "usage: showcase init <file> <title>")
+			fmt.Fprintln(os.Stderr, "usage: showboat init <file> <title>")
 			os.Exit(1)
 		}
 		if err := cmd.Init(args[1], args[2]); err != nil {
@@ -29,7 +29,7 @@ func main() {
 
 	case "build":
 		if len(args) < 3 {
-			fmt.Fprintln(os.Stderr, "usage: showcase build <file> <subcommand> [args...]")
+			fmt.Fprintln(os.Stderr, "usage: showboat build <file> <subcommand> [args...]")
 			os.Exit(1)
 		}
 		file := args[1]
@@ -49,7 +49,7 @@ func main() {
 			}
 		case "run":
 			if len(remaining) < 1 {
-				fmt.Fprintln(os.Stderr, "usage: showcase build <file> run <lang> [code]")
+				fmt.Fprintln(os.Stderr, "usage: showboat build <file> run <lang> [code]")
 				os.Exit(1)
 			}
 			lang := remaining[0]
@@ -79,7 +79,7 @@ func main() {
 
 	case "verify":
 		if len(args) < 2 {
-			fmt.Fprintln(os.Stderr, "usage: showcase verify <file> [--output <new>]")
+			fmt.Fprintln(os.Stderr, "usage: showboat verify <file> [--output <new>]")
 			os.Exit(1)
 		}
 		file := args[1]
@@ -105,7 +105,7 @@ func main() {
 
 	case "extract":
 		if len(args) < 2 {
-			fmt.Fprintln(os.Stderr, "usage: showcase extract <file>")
+			fmt.Fprintln(os.Stderr, "usage: showboat extract <file>")
 			os.Exit(1)
 		}
 		commands, err := cmd.Extract(args[1])
@@ -155,20 +155,20 @@ func getTextArg(args []string) (string, error) {
 }
 
 func printUsage() {
-	fmt.Print(`showcase - Create executable demo documents that show and prove an agent's work.
+	fmt.Print(`showboat - Create executable demo documents that show and prove an agent's work.
 
-Showcase helps agents build markdown documents that mix commentary, executable
+Showboat helps agents build markdown documents that mix commentary, executable
 code blocks, and captured output. These documents serve as both readable
 documentation and reproducible proof of work. A verifier can re-execute all
 code blocks and confirm the outputs still match.
 
 Usage:
-  showcase init <file> <title>             Create a new demo document
-  showcase build <file> commentary [text]  Append commentary (text or stdin)
-  showcase build <file> run <lang> [code]  Run code and capture output
-  showcase build <file> image [script]     Run script, capture image output
-  showcase verify <file> [--output <new>]  Re-run and diff all code blocks
-  showcase extract <file>                  Emit build commands to recreate file
+  showboat init <file> <title>             Create a new demo document
+  showboat build <file> commentary [text]  Append commentary (text or stdin)
+  showboat build <file> run <lang> [code]  Run code and capture output
+  showboat build <file> image [script]     Run script, capture image output
+  showboat verify <file> [--output <new>]  Re-run and diff all code blocks
+  showboat extract <file>                  Emit build commands to recreate file
 
 Global Options:
   --workdir <dir>   Set working directory for code execution (default: current)
@@ -177,30 +177,30 @@ Global Options:
 Stdin:
   The build subcommands accept input from stdin when the text/code argument is
   omitted. For example:
-    echo "Hello world" | showcase build demo.md commentary
-    cat script.sh | showcase build demo.md run bash
+    echo "Hello world" | showboat build demo.md commentary
+    cat script.sh | showboat build demo.md run bash
 
 Example:
   # Create a demo
-  showcase init demo.md "Setting Up a Python Project"
+  showboat init demo.md "Setting Up a Python Project"
 
   # Add commentary
-  showcase build demo.md commentary "First, let's create a virtual environment."
+  showboat build demo.md commentary "First, let's create a virtual environment."
 
   # Run a command and capture output
-  showcase build demo.md run bash "python3 -m venv .venv && echo 'Done'"
+  showboat build demo.md run bash "python3 -m venv .venv && echo 'Done'"
 
   # Run Python and capture output
-  showcase build demo.md run python "print('Hello from Python')"
+  showboat build demo.md run python "print('Hello from Python')"
 
   # Capture a screenshot
-  showcase build demo.md image "python screenshot.py http://localhost:8000"
+  showboat build demo.md image "python screenshot.py http://localhost:8000"
 
   # Verify the demo still works
-  showcase verify demo.md
+  showboat verify demo.md
 
   # See what commands built the demo
-  showcase extract demo.md
+  showboat extract demo.md
 
 Resulting markdown format:
 

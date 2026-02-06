@@ -1,10 +1,10 @@
-# Showcase Implementation Plan
+# Showboat Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build a Go CLI tool that helps agents create, verify, and extract executable markdown demo documents.
 
-**Architecture:** A single `showcase` binary with subcommands (`init`, `build`, `verify`, `extract`). The `markdown` package handles parsing and serialization of the document format. The `exec` package handles running code blocks and capturing output. The `cmd` package wires CLI arguments to these packages.
+**Architecture:** A single `showboat` binary with subcommands (`init`, `build`, `verify`, `extract`). The `markdown` package handles parsing and serialization of the document format. The `exec` package handles running code blocks and capturing output. The `cmd` package wires CLI arguments to these packages.
 
 **Tech Stack:** Go (standard library + `github.com/google/uuid` for UUID generation). No CLI framework — use `os.Args` and `flag` directly to keep help text fully custom.
 
@@ -18,8 +18,8 @@
 
 **Step 1: Initialize the Go module**
 
-Run: `go mod init github.com/simonw/showcase`
-Expected: `go.mod` created with module path `github.com/simonw/showcase`
+Run: `go mod init github.com/simonw/showboat`
+Expected: `go.mod` created with module path `github.com/simonw/showboat`
 
 **Step 2: Create a minimal main.go**
 
@@ -61,20 +61,20 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Print(`showcase - Create executable demo documents that show and prove an agent's work.
+	fmt.Print(`showboat - Create executable demo documents that show and prove an agent's work.
 
-Showcase helps agents build markdown documents that mix commentary, executable
+Showboat helps agents build markdown documents that mix commentary, executable
 code blocks, and captured output. These documents serve as both readable
 documentation and reproducible proof of work. A verifier can re-execute all
 code blocks and confirm the outputs still match.
 
 Usage:
-  showcase init <file> <title>             Create a new demo document
-  showcase build <file> commentary [text]  Append commentary (text or stdin)
-  showcase build <file> run <lang> [code]  Run code and capture output
-  showcase build <file> image [script]     Run script, capture image output
-  showcase verify <file> [--output <new>]  Re-run and diff all code blocks
-  showcase extract <file>                  Emit build commands to recreate file
+  showboat init <file> <title>             Create a new demo document
+  showboat build <file> commentary [text]  Append commentary (text or stdin)
+  showboat build <file> run <lang> [code]  Run code and capture output
+  showboat build <file> image [script]     Run script, capture image output
+  showboat verify <file> [--output <new>]  Re-run and diff all code blocks
+  showboat extract <file>                  Emit build commands to recreate file
 
 Global Options:
   --workdir <dir>   Set working directory for code execution (default: current)
@@ -83,30 +83,30 @@ Global Options:
 Stdin:
   The build subcommands accept input from stdin when the text/code argument is
   omitted. For example:
-    echo "Hello world" | showcase build demo.md commentary
-    cat script.sh | showcase build demo.md run bash
+    echo "Hello world" | showboat build demo.md commentary
+    cat script.sh | showboat build demo.md run bash
 
 Example:
   # Create a demo
-  showcase init demo.md "Setting Up a Python Project"
+  showboat init demo.md "Setting Up a Python Project"
 
   # Add commentary
-  showcase build demo.md commentary "First, let's create a virtual environment."
+  showboat build demo.md commentary "First, let's create a virtual environment."
 
   # Run a command and capture output
-  showcase build demo.md run bash "python3 -m venv .venv && echo 'Done'"
+  showboat build demo.md run bash "python3 -m venv .venv && echo 'Done'"
 
   # Run Python and capture output
-  showcase build demo.md run python "print('Hello from Python')"
+  showboat build demo.md run python "print('Hello from Python')"
 
   # Capture a screenshot
-  showcase build demo.md image "python screenshot.py http://localhost:8000"
+  showboat build demo.md image "python screenshot.py http://localhost:8000"
 
   # Verify the demo still works
-  showcase verify demo.md
+  showboat verify demo.md
 
   # See what commands built the demo
-  showcase extract demo.md
+  showboat extract demo.md
 
 Resulting markdown format:
 
@@ -137,20 +137,20 @@ Resulting markdown format:
 
 **Step 3: Verify it compiles and help works**
 
-Run: `go build -o showcase . && ./showcase --help`
+Run: `go build -o showboat . && ./showboat --help`
 Expected: Help text prints, exit 0
 
-Run: `./showcase`
+Run: `./showboat`
 Expected: Help text prints, exit 1
 
-Run: `./showcase init`
+Run: `./showboat init`
 Expected: "init: not yet implemented", exit 1
 
 **Step 4: Commit**
 
 ```bash
 git add go.mod main.go
-git commit -m "feat: scaffold showcase CLI with help text and command routing"
+git commit -m "feat: scaffold showboat CLI with help text and command routing"
 ```
 
 ---
@@ -214,7 +214,7 @@ Expected: FAIL — types not defined
 ```go
 package markdown
 
-// Block is an element in a showcase document.
+// Block is an element in a showboat document.
 type Block interface {
 	Type() string
 }
@@ -386,7 +386,7 @@ import (
 	"io"
 )
 
-// Write serializes a slice of Blocks into showcase markdown format.
+// Write serializes a slice of Blocks into showboat markdown format.
 func Write(w io.Writer, blocks []Block) error {
 	for i, block := range blocks {
 		if i > 0 {
@@ -585,7 +585,7 @@ import (
 	"strings"
 )
 
-// Parse reads showcase markdown from r and returns a slice of Blocks.
+// Parse reads showboat markdown from r and returns a slice of Blocks.
 func Parse(r io.Reader) ([]Block, error) {
 	scanner := bufio.NewScanner(r)
 	var blocks []Block
@@ -1027,7 +1027,7 @@ git commit -m "feat: add image script execution with file copy and naming"
 
 ---
 
-### Task 7: `showcase init` Command (`cmd/init.go`)
+### Task 7: `showboat init` Command (`cmd/init.go`)
 
 **Files:**
 - Create: `cmd/init.go`
@@ -1097,10 +1097,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/simonw/showcase/markdown"
+	"github.com/simonw/showboat/markdown"
 )
 
-// Init creates a new showcase document with a title and timestamp.
+// Init creates a new showboat document with a title and timestamp.
 // Returns an error if the file already exists.
 func Init(file, title string) error {
 	if _, err := os.Stat(file); err == nil {
@@ -1134,7 +1134,7 @@ Update the `init` case in `main.go`:
 ```go
 case "init":
     if len(os.Args) < 4 {
-        fmt.Fprintln(os.Stderr, "usage: showcase init <file> <title>")
+        fmt.Fprintln(os.Stderr, "usage: showboat init <file> <title>")
         os.Exit(1)
     }
     if err := cmd.Init(os.Args[2], os.Args[3]); err != nil {
@@ -1143,23 +1143,23 @@ case "init":
     }
 ```
 
-Add import: `"github.com/simonw/showcase/cmd"`
+Add import: `"github.com/simonw/showboat/cmd"`
 
 **Step 6: Build and manually test**
 
-Run: `go build -o showcase . && ./showcase init /tmp/test-demo.md "Test Demo" && cat /tmp/test-demo.md`
+Run: `go build -o showboat . && ./showboat init /tmp/test-demo.md "Test Demo" && cat /tmp/test-demo.md`
 Expected: File created with title and timestamp
 
 **Step 7: Commit**
 
 ```bash
 git add cmd/ main.go
-git commit -m "feat: implement showcase init command"
+git commit -m "feat: implement showboat init command"
 ```
 
 ---
 
-### Task 8: `showcase build commentary` Command
+### Task 8: `showboat build commentary` Command
 
 **Files:**
 - Create: `cmd/build.go`
@@ -1237,10 +1237,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/simonw/showcase/markdown"
+	"github.com/simonw/showboat/markdown"
 )
 
-// BuildCommentary appends a commentary block to an existing showcase document.
+// BuildCommentary appends a commentary block to an existing showboat document.
 func BuildCommentary(file, text string) error {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		return fmt.Errorf("file not found: %s", file)
@@ -1280,7 +1280,7 @@ Update the `build` case to parse subcommands:
 ```go
 case "build":
     if len(os.Args) < 4 {
-        fmt.Fprintln(os.Stderr, "usage: showcase build <file> <subcommand> [args...]")
+        fmt.Fprintln(os.Stderr, "usage: showboat build <file> <subcommand> [args...]")
         os.Exit(1)
     }
     file := os.Args[2]
@@ -1334,12 +1334,12 @@ Add imports: `"io"`, `"strings"`
 
 ```bash
 git add cmd/ main.go
-git commit -m "feat: implement showcase build commentary command"
+git commit -m "feat: implement showboat build commentary command"
 ```
 
 ---
 
-### Task 9: `showcase build run` Command
+### Task 9: `showboat build run` Command
 
 **Files:**
 - Modify: `cmd/build.go`
@@ -1403,7 +1403,7 @@ Add to `cmd/build.go`:
 
 ```go
 import (
-	execpkg "github.com/simonw/showcase/exec"
+	execpkg "github.com/simonw/showboat/exec"
 )
 
 // BuildRun appends a code block, executes it, and appends the output.
@@ -1457,7 +1457,7 @@ Update the `run` case:
 ```go
 case "run":
     if len(os.Args) < 5 {
-        fmt.Fprintln(os.Stderr, "usage: showcase build <file> run <lang> [code]")
+        fmt.Fprintln(os.Stderr, "usage: showboat build <file> run <lang> [code]")
         os.Exit(1)
     }
     lang := os.Args[4]
@@ -1478,12 +1478,12 @@ Also add `--workdir` flag parsing before the command switch in main.go. Parse `o
 
 ```bash
 git add cmd/ main.go
-git commit -m "feat: implement showcase build run command"
+git commit -m "feat: implement showboat build run command"
 ```
 
 ---
 
-### Task 10: `showcase build image` Command
+### Task 10: `showboat build image` Command
 
 **Files:**
 - Modify: `cmd/build.go`
@@ -1602,12 +1602,12 @@ case "image":
 
 ```bash
 git add cmd/ main.go
-git commit -m "feat: implement showcase build image command"
+git commit -m "feat: implement showboat build image command"
 ```
 
 ---
 
-### Task 11: `showcase verify` Command
+### Task 11: `showboat verify` Command
 
 **Files:**
 - Create: `cmd/verify.go`
@@ -1709,8 +1709,8 @@ import (
 	"os"
 	"strings"
 
-	execpkg "github.com/simonw/showcase/exec"
-	"github.com/simonw/showcase/markdown"
+	execpkg "github.com/simonw/showboat/exec"
+	"github.com/simonw/showboat/markdown"
 )
 
 // Diff represents a mismatch between stored and actual output.
@@ -1799,7 +1799,7 @@ Expected: PASS
 ```go
 case "verify":
     if len(os.Args) < 3 {
-        fmt.Fprintln(os.Stderr, "usage: showcase verify <file> [--output <newfile>]")
+        fmt.Fprintln(os.Stderr, "usage: showboat verify <file> [--output <newfile>]")
         os.Exit(1)
     }
     file := os.Args[2]
@@ -1826,12 +1826,12 @@ case "verify":
 
 ```bash
 git add cmd/ main.go
-git commit -m "feat: implement showcase verify command"
+git commit -m "feat: implement showboat verify command"
 ```
 
 ---
 
-### Task 12: `showcase extract` Command
+### Task 12: `showboat extract` Command
 
 **Files:**
 - Create: `cmd/extract.go`
@@ -1865,7 +1865,7 @@ func TestExtract(t *testing.T) {
 		t.Fatalf("expected 3 commands, got %d: %v", len(commands), commands)
 	}
 
-	if !strings.Contains(commands[0], "showcase init") {
+	if !strings.Contains(commands[0], "showboat init") {
 		t.Errorf("expected init command, got: %s", commands[0])
 	}
 	if !strings.Contains(commands[1], "commentary") {
@@ -1892,10 +1892,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/simonw/showcase/markdown"
+	"github.com/simonw/showboat/markdown"
 )
 
-// Extract parses a showcase document and returns the sequence of CLI commands
+// Extract parses a showboat document and returns the sequence of CLI commands
 // that would reproduce it.
 func Extract(file string) ([]string, error) {
 	f, err := os.Open(file)
@@ -1913,14 +1913,14 @@ func Extract(file string) ([]string, error) {
 	for _, block := range blocks {
 		switch b := block.(type) {
 		case markdown.TitleBlock:
-			commands = append(commands, fmt.Sprintf("showcase init %s %s", shellQuote(file), shellQuote(b.Title)))
+			commands = append(commands, fmt.Sprintf("showboat init %s %s", shellQuote(file), shellQuote(b.Title)))
 		case markdown.CommentaryBlock:
-			commands = append(commands, fmt.Sprintf("showcase build %s commentary %s", shellQuote(file), shellQuote(b.Text)))
+			commands = append(commands, fmt.Sprintf("showboat build %s commentary %s", shellQuote(file), shellQuote(b.Text)))
 		case markdown.CodeBlock:
 			if b.IsImage {
-				commands = append(commands, fmt.Sprintf("showcase build %s image %s", shellQuote(file), shellQuote(b.Code)))
+				commands = append(commands, fmt.Sprintf("showboat build %s image %s", shellQuote(file), shellQuote(b.Code)))
 			} else {
-				commands = append(commands, fmt.Sprintf("showcase build %s run %s %s", shellQuote(file), b.Lang, shellQuote(b.Code)))
+				commands = append(commands, fmt.Sprintf("showboat build %s run %s %s", shellQuote(file), b.Lang, shellQuote(b.Code)))
 			}
 		// OutputBlock and ImageOutputBlock are generated, not commands
 		}
@@ -1948,7 +1948,7 @@ Expected: PASS
 ```go
 case "extract":
     if len(os.Args) < 3 {
-        fmt.Fprintln(os.Stderr, "usage: showcase extract <file>")
+        fmt.Fprintln(os.Stderr, "usage: showboat extract <file>")
         os.Exit(1)
     }
     commands, err := cmd.Extract(os.Args[2])
@@ -1965,7 +1965,7 @@ case "extract":
 
 ```bash
 git add cmd/ main.go
-git commit -m "feat: implement showcase extract command"
+git commit -m "feat: implement showboat extract command"
 ```
 
 ---
@@ -1996,7 +1996,7 @@ for i := 1; i < len(os.Args); i++ {
 
 **Step 2: Build and manually test**
 
-Run: `go build -o showcase . && ./showcase build /tmp/test.md run bash --workdir /tmp "pwd"`
+Run: `go build -o showboat . && ./showboat build /tmp/test.md run bash --workdir /tmp "pwd"`
 
 **Step 3: Commit**
 
@@ -2027,7 +2027,7 @@ import (
 
 func TestFullWorkflow(t *testing.T) {
 	// Build the binary
-	tmpBin := filepath.Join(t.TempDir(), "showcase")
+	tmpBin := filepath.Join(t.TempDir(), "showboat")
 	build := exec.Command("go", "build", "-o", tmpBin, ".")
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build failed: %s\n%s", err, out)
@@ -2078,7 +2078,7 @@ func TestFullWorkflow(t *testing.T) {
 
 	// Extract should produce commands
 	out := runOutput(t, tmpBin, "extract", file)
-	if !strings.Contains(out, "showcase init") {
+	if !strings.Contains(out, "showboat init") {
 		t.Errorf("extract missing init: %s", out)
 	}
 	if !strings.Contains(out, "run bash") {
@@ -2154,7 +2154,7 @@ Expected: All PASS
 
 **Step 2: Build and test help output**
 
-Run: `go build -o showcase . && ./showcase --help`
+Run: `go build -o showboat . && ./showboat --help`
 Expected: Complete, agent-friendly help text
 
 **Step 3: Final commit**

@@ -1,4 +1,4 @@
-module github.com/simonw/showcase
+module github.com/simonw/showboat
 
 go 1.24.7
 

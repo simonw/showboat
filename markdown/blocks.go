@@ -1,6 +1,6 @@
 package markdown
 
-// Block is an element in a showcase document.
+// Block is an element in a showboat document.
 type Block interface {
 	Type() string
 }

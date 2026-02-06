@@ -1,16 +1,16 @@
-# Showcase: Executable Demo Documents for Agents
+# Showboat: Executable Demo Documents for Agents
 
 ## Overview
 
-Showcase is a Go CLI tool for creating executable markdown demo documents. It helps agents produce documentation that both explains and proves their work — mixing commentary, executable code, and captured output in a single readable file.
+Showboat is a Go CLI tool for creating executable markdown demo documents. It helps agents produce documentation that both explains and proves their work — mixing commentary, executable code, and captured output in a single readable file.
 
 The primary audience is developers evaluating agent work and non-technical stakeholders reviewing results. The markdown format is the source of truth: every CLI command maps 1:1 to a pattern in the markdown, making the format fully round-trippable.
 
-Package: `github.com/simonw/showcase`
+Package: `github.com/simonw/showboat`
 
 ## Markdown Format
 
-A showcase document is plain markdown with a strict structure. Each element maps to exactly one CLI command.
+A showboat document is plain markdown with a strict structure. Each element maps to exactly one CLI command.
 
 **Init (title + timestamp):**
 
@@ -54,29 +54,29 @@ The `{image}` annotation on the code fence distinguishes an image-producing bloc
 
 ## CLI Commands
 
-### `showcase init <file> <title>`
+### `showboat init <file> <title>`
 
 Creates a new demo file. Errors if the file already exists. Writes the title as an `# H1` heading and an ISO 8601 timestamp.
 
-### `showcase build <file> commentary [text]`
+### `showboat build <file> commentary [text]`
 
 Appends markdown prose. Text from argument or stdin.
 
-### `showcase build <file> run <lang> [code]`
+### `showboat build <file> run <lang> [code]`
 
 Appends a fenced code block tagged with `<lang>`, executes it, and appends the captured output in an `output` block. Code from argument or stdin.
 
-### `showcase build <file> image [script]`
+### `showboat build <file> image [script]`
 
 Appends a fenced `{image}` code block, executes the script, expects the last line of stdout to be a path to a newly created image file, copies the image to the markdown file's directory with a `<uuid>-<date>.<ext>` name, and appends an `output-image` block with the markdown image reference. Script from argument or stdin.
 
-### `showcase verify <file> [--output <newfile>]`
+### `showboat verify <file> [--output <newfile>]`
 
 Re-executes all code blocks in order, compares each output against what's stored in the document. Exits non-zero with a diff if anything changed. With `--output`, writes an updated copy to `<newfile>`.
 
-### `showcase extract <file>`
+### `showboat extract <file>`
 
-Emits the sequence of `showcase init` and `showcase build` commands that would reproduce the document.
+Emits the sequence of `showboat init` and `showboat build` commands that would reproduce the document.
 
 ### Global Options
 
@@ -86,27 +86,27 @@ All `build` subcommands read from stdin when the text/code argument is omitted.
 
 ## Help Text
 
-The `showcase --help` output is the sole documentation for agents. It includes:
+The `showboat --help` output is the sole documentation for agents. It includes:
 
 - A brief explanation of the tool's purpose: creating executable demo documents that show and prove an agent's work
 - A complete list of subcommands with short descriptions
 - A full worked example showing a realistic sequence: `init`, several `build` commands, then `verify` — including what the resulting markdown looks like
 - The stdin convention
 
-Each subcommand's `--help` shows its specific usage, arguments, and a short example. An agent should be able to run `showcase --help` once and immediately produce a correct demo.
+Each subcommand's `--help` shows its specific usage, arguments, and a short example. An agent should be able to run `showboat --help` once and immediately produce a correct demo.
 
 ## Project Structure
 
 ```
-showcase/
+showboat/
 ├── main.go              # Entry point, top-level CLI routing
 ├── cmd/
-│   ├── init.go          # showcase init
-│   ├── build.go         # showcase build (commentary, run, image)
-│   ├── verify.go        # showcase verify
-│   └── extract.go       # showcase extract
+│   ├── init.go          # showboat init
+│   ├── build.go         # showboat build (commentary, run, image)
+│   ├── verify.go        # showboat verify
+│   └── extract.go       # showboat extract
 ├── markdown/
-│   ├── parser.go        # Parse a showcase markdown file into structured blocks
+│   ├── parser.go        # Parse a showboat markdown file into structured blocks
 │   ├── writer.go        # Serialize structured blocks back to markdown
 │   └── blocks.go        # Block types: commentary, code, output, output-image
 ├── exec/
@@ -153,7 +153,7 @@ The `markdown` package is the core — it owns the canonical representation. Bot
 
 - Round-trip tests: parse a markdown document into blocks, serialize back, confirm identical output
 - Test each block type in isolation: commentary, code+output, code+output-image
-- Test `extract`: parse a document and verify the generated `showcase` commands would recreate it
+- Test `extract`: parse a document and verify the generated `showboat` commands would recreate it
 
 ### Unit Tests (`exec` package)
 

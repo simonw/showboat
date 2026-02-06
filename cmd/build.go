@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	execpkg "github.com/simonw/showcase/exec"
-	"github.com/simonw/showcase/markdown"
+	execpkg "github.com/simonw/showboat/exec"
+	"github.com/simonw/showboat/markdown"
 )
 
-// BuildCommentary appends a commentary block to an existing showcase document.
+// BuildCommentary appends a commentary block to an existing showboat document.
 func BuildCommentary(file, text string) error {
 	blocks, err := readBlocks(file)
 	if err != nil {
