@@ -16,7 +16,7 @@ func TestExtract(t *testing.T) {
 	if err := BuildCommentary(file, "Hello world"); err != nil {
 		t.Fatal(err)
 	}
-	if err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 

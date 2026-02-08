@@ -73,7 +73,7 @@ func TestBuildRun(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -99,7 +99,7 @@ func TestBuildRunNonZeroExit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := BuildRun(file, "bash", "echo failing && exit 1", ""); err != nil {
+	if _, _, err := BuildRun(file, "bash", "echo failing && exit 1", ""); err != nil {
 		t.Fatal(err)
 	}
 

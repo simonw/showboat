@@ -65,9 +65,14 @@ func main() {
 				fmt.Fprintf(os.Stderr, "error: %v\n", err)
 				os.Exit(1)
 			}
-			if err := cmd.BuildRun(file, lang, code, workdir); err != nil {
+			output, exitCode, err := cmd.BuildRun(file, lang, code, workdir)
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "error: %v\n", err)
 				os.Exit(1)
+			}
+			fmt.Print(output)
+			if exitCode != 0 {
+				os.Exit(exitCode)
 			}
 		case "image":
 			script, err := getTextArg(remaining)
@@ -107,6 +112,16 @@ func main() {
 			for _, d := range diffs {
 				fmt.Println(d.String())
 			}
+			os.Exit(1)
+		}
+
+	case "pop":
+		if len(args) < 2 {
+			fmt.Fprintln(os.Stderr, "usage: showboat pop <file>")
+			os.Exit(1)
+		}
+		if err := cmd.Pop(args[1]); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
 
@@ -185,6 +200,7 @@ Usage:
   showboat build <file> commentary [text]  Append commentary (text or stdin)
   showboat build <file> run <lang> [code]  Run code and capture output
   showboat build <file> image [script]     Run script, capture image output
+  showboat pop <file>                      Remove the most recent entry
   showboat verify <file> [--output <new>]  Re-run and diff all code blocks
   showboat extract <file> [--filename <name>]  Emit build commands to recreate file
 
@@ -192,6 +208,18 @@ Global Options:
   --workdir <dir>   Set working directory for code execution (default: current)
   --version         Print version and exit
   --help, -h        Show this help message
+
+Build run output:
+  The "build run" subcommand prints the captured shell output to stdout and
+  exits with the same exit code as the executed command. This lets agents see
+  what happened and react to errors. The output is still appended to the
+  document regardless of exit code. Use "pop" to remove a failed entry.
+
+Pop:
+  The "pop" command removes the most recent entry from a document. For a "run"
+  or "image" entry this removes both the code block and its output. For a
+  commentary entry it removes the single commentary block. This is useful when
+  a build command produces an error that shouldn't remain in the document.
 
 Stdin:
   The build subcommands accept input from stdin when the text/code argument is

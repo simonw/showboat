@@ -23,19 +23,20 @@ func BuildCommentary(file, text string) error {
 }
 
 // BuildRun appends a code block, executes it, and appends the output.
-func BuildRun(file, lang, code, workdir string) error {
+// It returns the captured output, the process exit code, and any error.
+func BuildRun(file, lang, code, workdir string) (string, int, error) {
 	if _, err := os.Stat(file); err != nil {
-		return fmt.Errorf("file not found: %s", file)
+		return "", 1, fmt.Errorf("file not found: %s", file)
 	}
 
-	output, err := execpkg.Run(lang, code, workdir)
+	output, exitCode, err := execpkg.Run(lang, code, workdir)
 	if err != nil {
-		return fmt.Errorf("running code: %w", err)
+		return "", exitCode, fmt.Errorf("running code: %w", err)
 	}
 
 	blocks, err := readBlocks(file)
 	if err != nil {
-		return err
+		return "", exitCode, err
 	}
 
 	blocks = append(blocks,
@@ -43,7 +44,11 @@ func BuildRun(file, lang, code, workdir string) error {
 		markdown.OutputBlock{Content: output},
 	)
 
-	return writeBlocks(file, blocks)
+	if err := writeBlocks(file, blocks); err != nil {
+		return output, exitCode, err
+	}
+
+	return output, exitCode, nil
 }
 
 // BuildImage appends an image code block, runs the script, captures the image.

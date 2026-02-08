@@ -7,10 +7,11 @@ import (
 )
 
 // Run executes code using the given language interpreter and returns
-// the combined stdout+stderr output. Non-zero exit codes are not
-// treated as errors — the output is still captured and returned.
+// the combined stdout+stderr output and the process exit code.
+// Non-zero exit codes are not treated as errors — the output is still
+// captured and returned alongside the exit code.
 // If workdir is empty, the current directory is used.
-func Run(lang, code, workdir string) (string, error) {
+func Run(lang, code, workdir string) (string, int, error) {
 	cmd := exec.Command(lang, "-c", code)
 
 	if workdir != "" {
@@ -23,11 +24,11 @@ func Run(lang, code, workdir string) (string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); ok {
-			return buf.String(), nil
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			return buf.String(), exitErr.ExitCode(), nil
 		}
-		return "", fmt.Errorf("executing %s: %w", lang, err)
+		return "", 1, fmt.Errorf("executing %s: %w", lang, err)
 	}
 
-	return buf.String(), nil
+	return buf.String(), 0, nil
 }

@@ -123,6 +123,107 @@ func runOutput(t *testing.T, bin string, args ...string) string {
 	return string(out)
 }
 
+func TestBuildRunOutputAndExitCode(t *testing.T) {
+	tmpBin := filepath.Join(t.TempDir(), "showboat")
+	build := exec.Command("go", "build", "-o", tmpBin, ".")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build failed: %s\n%s", err, out)
+	}
+
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	run(t, tmpBin, "init", file, "Output Test")
+
+	// Successful command: should print output and exit 0
+	out := runOutput(t, tmpBin, "build", file, "run", "bash", "echo hello world")
+	if !strings.Contains(out, "hello world") {
+		t.Errorf("expected build run to print output, got: %q", out)
+	}
+
+	// Failing command: should print output and exit non-zero
+	cmd := exec.Command(tmpBin, "build", file, "run", "bash", "echo fail output && exit 42")
+	failOut, err := cmd.CombinedOutput()
+	if err == nil {
+		t.Error("expected build run to exit non-zero for failing command")
+	}
+	if !strings.Contains(string(failOut), "fail output") {
+		t.Errorf("expected failing build run to print output, got: %q", string(failOut))
+	}
+	// Check the exit code is 42
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		if exitErr.ExitCode() != 42 {
+			t.Errorf("expected exit code 42, got %d", exitErr.ExitCode())
+		}
+	}
+
+	// The failing output should still be in the document
+	content, _ := os.ReadFile(file)
+	if !strings.Contains(string(content), "fail output") {
+		t.Error("expected failing command output to be captured in document")
+	}
+}
+
+func TestPop(t *testing.T) {
+	tmpBin := filepath.Join(t.TempDir(), "showboat")
+	build := exec.Command("go", "build", "-o", tmpBin, ".")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build failed: %s\n%s", err, out)
+	}
+
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	// Init and add some content
+	run(t, tmpBin, "init", file, "Pop Test")
+	run(t, tmpBin, "build", file, "commentary", "First comment.")
+	run(t, tmpBin, "build", file, "run", "bash", "echo hello")
+	run(t, tmpBin, "build", file, "commentary", "Second comment.")
+
+	// Pop should remove the last commentary
+	run(t, tmpBin, "pop", file)
+	content, _ := os.ReadFile(file)
+	s := string(content)
+	if strings.Contains(s, "Second comment.") {
+		t.Error("expected pop to remove last commentary")
+	}
+	if !strings.Contains(s, "hello") {
+		t.Error("expected earlier content to remain after pop")
+	}
+
+	// Pop again should remove the run entry (code + output)
+	run(t, tmpBin, "pop", file)
+	content, _ = os.ReadFile(file)
+	s = string(content)
+	if strings.Contains(s, "echo hello") {
+		t.Error("expected pop to remove code block")
+	}
+	if strings.Contains(s, "hello\n") {
+		// Check that the output block was also removed, but "hello" might still
+		// appear in the test title check — look more specifically
+		if strings.Contains(s, "```output") {
+			t.Error("expected pop to remove output block")
+		}
+	}
+	if !strings.Contains(s, "First comment.") {
+		t.Error("expected first commentary to remain after popping run")
+	}
+
+	// Pop again should remove the first commentary
+	run(t, tmpBin, "pop", file)
+	content, _ = os.ReadFile(file)
+	s = string(content)
+	if strings.Contains(s, "First comment.") {
+		t.Error("expected pop to remove first commentary")
+	}
+
+	// Pop on title-only document should fail
+	cmd := exec.Command(tmpBin, "pop", file)
+	if err := cmd.Run(); err == nil {
+		t.Error("expected pop to fail on title-only document")
+	}
+}
+
 func TestVersionFlagDefault(t *testing.T) {
 	tmpBin := filepath.Join(t.TempDir(), "showcase")
 	build := exec.Command("go", "build", "-o", tmpBin, ".")

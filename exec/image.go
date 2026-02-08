@@ -25,7 +25,7 @@ var validImageExts = map[string]bool{
 // The image is copied to destDir with a <uuid>-<date>.<ext> filename.
 // Returns the new filename (not the full path).
 func RunImage(script, destDir, workdir string) (string, error) {
-	output, err := Run("bash", script, workdir)
+	output, _, err := Run("bash", script, workdir)
 	if err != nil {
 		return "", fmt.Errorf("running image script: %w", err)
 	}

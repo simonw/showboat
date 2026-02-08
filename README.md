@@ -41,6 +41,7 @@ showboat init <file> <title>             Create a new demo document
 showboat build <file> commentary [text]  Append commentary (text or stdin)
 showboat build <file> run <lang> [code]  Run code and capture output
 showboat build <file> image [script]     Run script, capture image output
+showboat pop <file>                      Remove the most recent entry
 showboat verify <file> [--output <new>]  Re-run and diff all code blocks
 showboat extract <file> [--filename <name>]  Emit build commands to recreate file
 ```
@@ -57,6 +58,31 @@ cat script.sh | showboat build demo.md run bash
 - `--workdir <dir>` — Set working directory for code execution (default: current)
 - `--version` — Print version and exit
 - `--help, -h` — Show help message
+
+## Build run output
+
+The `build run` subcommand prints the captured shell output to stdout and exits with the same exit code as the executed command. This lets agents see what happened during execution and react to errors. The output is still appended to the document regardless of exit code.
+
+```bash
+$ showboat build demo.md run bash "echo hello && exit 1"
+hello
+$ echo $?
+1
+```
+
+## Popping entries
+
+`showboat pop` removes the most recent entry from a document. For a `run` or `image` entry this removes both the code block and its output. For a commentary entry it removes the single commentary block.
+
+This is useful when a build command produces an error that shouldn't remain in the document — the agent can inspect the output, decide the entry was a mistake, and pop it:
+
+```bash
+# A command fails
+showboat build demo.md run bash "some-broken-command"
+
+# Remove the failed entry from the document
+showboat pop demo.md
+```
 
 ## Example
 
