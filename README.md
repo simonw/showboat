@@ -46,10 +46,10 @@ import cog
 import subprocess
 result = subprocess.run(["go", "run", ".", "--help"], capture_output=True, text=True)
 cog.out(
-    "```\n{}\n```\n".format(result.stdout.strip())
+    "````\n{}\n````\n".format(result.stdout.strip())
 )
 ]]] -->
-```
+````
 showboat - Create executable demo documents that show and prove an agent's work.
 
 Showboat helps agents build markdown documents that mix commentary, executable
@@ -169,7 +169,7 @@ Resulting markdown format:
   ```
 
   ![screenshot](screenshot.png)
-```
+````
 <!-- [[[end]]] -->
 
 ## Example
