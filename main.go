@@ -34,58 +34,53 @@ func main() {
 			os.Exit(1)
 		}
 
-	case "build":
-		if len(args) < 3 {
-			fmt.Fprintln(os.Stderr, "usage: showboat build <file> <subcommand> [args...]")
+	case "note":
+		if len(args) < 2 {
+			fmt.Fprintln(os.Stderr, "usage: showboat note <file> [text]")
 			os.Exit(1)
 		}
-		file := args[1]
-		sub := args[2]
-		remaining := args[3:]
+		text, err := getTextArg(args[2:])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		if err := cmd.Note(args[1], text); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 
-		switch sub {
-		case "commentary":
-			text, err := getTextArg(remaining)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-			if err := cmd.BuildCommentary(file, text); err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-		case "run":
-			if len(remaining) < 1 {
-				fmt.Fprintln(os.Stderr, "usage: showboat build <file> run <lang> [code]")
-				os.Exit(1)
-			}
-			lang := remaining[0]
-			code, err := getTextArg(remaining[1:])
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-			output, exitCode, err := cmd.BuildRun(file, lang, code, workdir)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-			fmt.Print(output)
-			if exitCode != 0 {
-				os.Exit(exitCode)
-			}
-		case "image":
-			script, err := getTextArg(remaining)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-			if err := cmd.BuildImage(file, script, workdir); err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
-			}
-		default:
-			fmt.Fprintf(os.Stderr, "unknown build subcommand: %s\n", sub)
+	case "exec":
+		if len(args) < 3 {
+			fmt.Fprintln(os.Stderr, "usage: showboat exec <file> <lang> [code]")
+			os.Exit(1)
+		}
+		code, err := getTextArg(args[3:])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		output, exitCode, err := cmd.Exec(args[1], args[2], code, workdir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Print(output)
+		if exitCode != 0 {
+			os.Exit(exitCode)
+		}
+
+	case "image":
+		if len(args) < 2 {
+			fmt.Fprintln(os.Stderr, "usage: showboat image <file> [script]")
+			os.Exit(1)
+		}
+		script, err := getTextArg(args[2:])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		if err := cmd.Image(args[1], script, workdir); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
 
@@ -197,57 +192,57 @@ code blocks and confirm the outputs still match.
 
 Usage:
   showboat init <file> <title>             Create a new demo document
-  showboat build <file> commentary [text]  Append commentary (text or stdin)
-  showboat build <file> run <lang> [code]  Run code and capture output
-  showboat build <file> image [script]     Run script, capture image output
+  showboat note <file> [text]              Append commentary (text or stdin)
+  showboat exec <file> <lang> [code]       Run code and capture output
+  showboat image <file> [script]           Run script, capture image output
   showboat pop <file>                      Remove the most recent entry
   showboat verify <file> [--output <new>]  Re-run and diff all code blocks
-  showboat extract <file> [--filename <name>]  Emit build commands to recreate file
+  showboat extract <file> [--filename <name>]  Emit commands to recreate file
 
 Global Options:
   --workdir <dir>   Set working directory for code execution (default: current)
   --version         Print version and exit
   --help, -h        Show this help message
 
-Build run output:
-  The "build run" subcommand prints the captured shell output to stdout and
-  exits with the same exit code as the executed command. This lets agents see
-  what happened and react to errors. The output is still appended to the
-  document regardless of exit code. Use "pop" to remove a failed entry.
+Exec output:
+  The "exec" command prints the captured shell output to stdout and exits with
+  the same exit code as the executed command. This lets agents see what happened
+  and react to errors. The output is still appended to the document regardless
+  of exit code. Use "pop" to remove a failed entry.
 
 Pop:
-  The "pop" command removes the most recent entry from a document. For a "run"
-  or "image" entry this removes both the code block and its output. For a
-  commentary entry it removes the single commentary block. This is useful when
-  a build command produces an error that shouldn't remain in the document.
+  The "pop" command removes the most recent entry from a document. For an "exec"
+  or "image" entry this removes both the code block and its output. For a "note"
+  entry it removes the single commentary block. This is useful when a command
+  produces an error that shouldn't remain in the document.
 
 Stdin:
-  The build subcommands accept input from stdin when the text/code argument is
-  omitted. For example:
-    echo "Hello world" | showboat build demo.md commentary
-    cat script.sh | showboat build demo.md run bash
+  Commands accept input from stdin when the text/code argument is omitted.
+  For example:
+    echo "Hello world" | showboat note demo.md
+    cat script.sh | showboat exec demo.md bash
 
 Example:
   # Create a demo
   showboat init demo.md "Setting Up a Python Project"
 
   # Add commentary
-  showboat build demo.md commentary "First, let's create a virtual environment."
+  showboat note demo.md "First, let's create a virtual environment."
 
   # Run a command and capture output (output is printed to stdout)
-  showboat build demo.md run bash "python3 -m venv .venv && echo 'Done'"
+  showboat exec demo.md bash "python3 -m venv .venv && echo 'Done'"
 
   # Run Python and capture output
-  showboat build demo.md run python "print('Hello from Python')"
+  showboat exec demo.md python "print('Hello from Python')"
 
   # Oops, wrong command — remove the last entry from the document
   showboat pop demo.md
 
   # Redo it correctly
-  showboat build demo.md run python3 "print('Hello from Python')"
+  showboat exec demo.md python3 "print('Hello from Python')"
 
   # Capture a screenshot
-  showboat build demo.md image "python screenshot.py http://localhost:8000"
+  showboat image demo.md "python screenshot.py http://localhost:8000"
 
   # Verify the demo still works
   showboat verify demo.md

@@ -22,17 +22,17 @@ func TestFullWorkflow(t *testing.T) {
 	// Init
 	run(t, tmpBin, "init", file, "Integration Test Demo")
 
-	// Commentary
-	run(t, tmpBin, "build", file, "commentary", "This demo tests the full workflow.")
+	// Note
+	run(t, tmpBin, "note", file, "This demo tests the full workflow.")
 
-	// Run bash
-	run(t, tmpBin, "build", file, "run", "bash", "echo 'Hello from bash'")
+	// Exec bash
+	run(t, tmpBin, "exec", file, "bash", "echo 'Hello from bash'")
 
-	// Run python
-	run(t, tmpBin, "build", file, "run", "python3", "print(2 + 2)")
+	// Exec python
+	run(t, tmpBin, "exec", file, "python3", "print(2 + 2)")
 
 	// More commentary
-	run(t, tmpBin, "build", file, "commentary", "Everything works.")
+	run(t, tmpBin, "note", file, "Everything works.")
 
 	// Read the file and check structure
 	content, err := os.ReadFile(file)
@@ -64,15 +64,15 @@ func TestFullWorkflow(t *testing.T) {
 	if !strings.Contains(out, "showboat init") {
 		t.Errorf("extract missing init: %s", out)
 	}
-	if !strings.Contains(out, "run bash") {
-		t.Errorf("extract missing run bash: %s", out)
+	if !strings.Contains(out, "exec") {
+		t.Errorf("extract missing exec: %s", out)
 	}
 
 	// Test stdin for commentary
 	stdinFile := filepath.Join(dir, "stdin-demo.md")
 	run(t, tmpBin, "init", stdinFile, "Stdin Test")
 
-	stdinCmd := exec.Command(tmpBin, "build", stdinFile, "commentary")
+	stdinCmd := exec.Command(tmpBin, "note", stdinFile)
 	stdinCmd.Stdin = strings.NewReader("Commentary from stdin")
 	if out, err := stdinCmd.CombinedOutput(); err != nil {
 		t.Fatalf("stdin commentary failed: %s\n%s", err, out)
@@ -136,13 +136,13 @@ func TestBuildRunOutputAndExitCode(t *testing.T) {
 	run(t, tmpBin, "init", file, "Output Test")
 
 	// Successful command: should print output and exit 0
-	out := runOutput(t, tmpBin, "build", file, "run", "bash", "echo hello world")
+	out := runOutput(t, tmpBin, "exec", file, "bash", "echo hello world")
 	if !strings.Contains(out, "hello world") {
 		t.Errorf("expected build run to print output, got: %q", out)
 	}
 
 	// Failing command: should print output and exit non-zero
-	cmd := exec.Command(tmpBin, "build", file, "run", "bash", "echo fail output && exit 42")
+	cmd := exec.Command(tmpBin, "exec", file, "bash", "echo fail output && exit 42")
 	failOut, err := cmd.CombinedOutput()
 	if err == nil {
 		t.Error("expected build run to exit non-zero for failing command")
@@ -176,9 +176,9 @@ func TestPop(t *testing.T) {
 
 	// Init and add some content
 	run(t, tmpBin, "init", file, "Pop Test")
-	run(t, tmpBin, "build", file, "commentary", "First comment.")
-	run(t, tmpBin, "build", file, "run", "bash", "echo hello")
-	run(t, tmpBin, "build", file, "commentary", "Second comment.")
+	run(t, tmpBin, "note", file, "First comment.")
+	run(t, tmpBin, "exec", file, "bash", "echo hello")
+	run(t, tmpBin, "note", file, "Second comment.")
 
 	// Pop should remove the last commentary
 	run(t, tmpBin, "pop", file)

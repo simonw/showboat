@@ -14,7 +14,7 @@ func TestVerifyPasses(t *testing.T) {
 	if err := Init(file, "Test"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -35,7 +35,7 @@ func TestVerifyDetectsDrift(t *testing.T) {
 	if err := Init(file, "Test"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -74,7 +74,7 @@ func TestVerifyWritesOutput(t *testing.T) {
 	if err := Init(file, "Test"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 

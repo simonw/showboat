@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestBuildCommentary(t *testing.T) {
+func TestNote(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
@@ -15,7 +15,7 @@ func TestBuildCommentary(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := BuildCommentary(file, "Hello world"); err != nil {
+	if err := Note(file, "Hello world"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -29,7 +29,7 @@ func TestBuildCommentary(t *testing.T) {
 	}
 }
 
-func TestBuildCommentaryMultiple(t *testing.T) {
+func TestNoteMultiple(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
@@ -37,10 +37,10 @@ func TestBuildCommentaryMultiple(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := BuildCommentary(file, "First comment"); err != nil {
+	if err := Note(file, "First comment"); err != nil {
 		t.Fatal(err)
 	}
-	if err := BuildCommentary(file, "Second comment"); err != nil {
+	if err := Note(file, "Second comment"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -58,14 +58,14 @@ func TestBuildCommentaryMultiple(t *testing.T) {
 	}
 }
 
-func TestBuildCommentaryNoFile(t *testing.T) {
-	err := BuildCommentary("/nonexistent/path/demo.md", "Hello")
+func TestNoteNoFile(t *testing.T) {
+	err := Note("/nonexistent/path/demo.md", "Hello")
 	if err == nil {
 		t.Error("expected error for nonexistent file")
 	}
 }
 
-func TestBuildRun(t *testing.T) {
+func TestExec(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
@@ -73,7 +73,7 @@ func TestBuildRun(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -91,7 +91,7 @@ func TestBuildRun(t *testing.T) {
 	}
 }
 
-func TestBuildRunNonZeroExit(t *testing.T) {
+func TestExecNonZeroExit(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
@@ -99,7 +99,7 @@ func TestBuildRunNonZeroExit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := BuildRun(file, "bash", "echo failing && exit 1", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo failing && exit 1", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -117,7 +117,7 @@ func TestBuildRunNonZeroExit(t *testing.T) {
 	}
 }
 
-func TestBuildImage(t *testing.T) {
+func TestImage(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
@@ -145,7 +145,7 @@ func TestBuildImage(t *testing.T) {
 
 	script := "echo " + pngPath
 
-	if err := BuildImage(file, script, ""); err != nil {
+	if err := Image(file, script, ""); err != nil {
 		t.Fatal(err)
 	}
 

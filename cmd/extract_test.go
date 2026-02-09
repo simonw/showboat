@@ -13,10 +13,10 @@ func TestExtract(t *testing.T) {
 	if err := Init(file, "Test"); err != nil {
 		t.Fatal(err)
 	}
-	if err := BuildCommentary(file, "Hello world"); err != nil {
+	if err := Note(file, "Hello world"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := BuildRun(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -35,11 +35,11 @@ func TestExtract(t *testing.T) {
 	if !strings.Contains(commands[0], file) {
 		t.Errorf("expected init command to contain filename %q, got: %s", file, commands[0])
 	}
-	if !strings.Contains(commands[1], "commentary") {
-		t.Errorf("expected commentary command, got: %s", commands[1])
+	if !strings.Contains(commands[1], "showboat note") {
+		t.Errorf("expected note command, got: %s", commands[1])
 	}
-	if !strings.Contains(commands[2], "run bash") {
-		t.Errorf("expected run command, got: %s", commands[2])
+	if !strings.Contains(commands[2], "showboat exec") {
+		t.Errorf("expected exec command, got: %s", commands[2])
 	}
 }
 
