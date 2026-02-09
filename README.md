@@ -1,5 +1,10 @@
 # Showboat
 
+[![PyPI](https://img.shields.io/pypi/v/showboat.svg)](https://pypi.org/project/showboat/)
+[![Changelog](https://img.shields.io/github/v/release/simonw/showboat?include_prereleases&label=changelog)](https://github.com/simonw/showboat/releases)
+[![Tests](https://github.com/simonw/showboat/actions/workflows/test.yml/badge.svg)](https://github.com/simonw/showboat/actions/workflows/test.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/showboat/blob/main/LICENSE)
+
 Create executable demo documents that show and prove an agent's work.
 
 Showboat helps agents build markdown documents that mix commentary, executable code blocks, and captured output. These documents serve as both readable documentation and reproducible proof of work. A verifier can re-execute all code blocks and confirm the outputs still match.
