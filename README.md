@@ -43,19 +43,19 @@ Compiled binaries are available [on the releases page](https://github.com/simonw
 
 ```
 showboat init <file> <title>             Create a new demo document
-showboat build <file> commentary [text]  Append commentary (text or stdin)
-showboat build <file> run <lang> [code]  Run code and capture output
-showboat build <file> image [script]     Run script, capture image output
+showboat note <file> [text]              Append commentary (text or stdin)
+showboat exec <file> <lang> [code]       Run code and capture output
+showboat image <file> [script]           Run script, capture image output
 showboat pop <file>                      Remove the most recent entry
 showboat verify <file> [--output <new>]  Re-run and diff all code blocks
-showboat extract <file> [--filename <name>]  Emit build commands to recreate file
+showboat extract <file> [--filename <name>]  Emit commands to recreate file
 ```
 
-Build subcommands accept input from stdin when the text/code argument is omitted:
+Commands accept input from stdin when the text/code argument is omitted:
 
 ```bash
-echo "Hello world" | showboat build demo.md commentary
-cat script.sh | showboat build demo.md run bash
+echo "Hello world" | showboat note demo.md
+cat script.sh | showboat exec demo.md bash
 ```
 
 ## Global options
@@ -64,12 +64,12 @@ cat script.sh | showboat build demo.md run bash
 - `--version` — Print version and exit
 - `--help, -h` — Show help message
 
-## Build run output
+## Exec output
 
-The `build run` subcommand prints the captured shell output to stdout and exits with the same exit code as the executed command. This lets agents see what happened during execution and react to errors. The output is still appended to the document regardless of exit code.
+The `exec` command prints the captured shell output to stdout and exits with the same exit code as the executed command. This lets agents see what happened during execution and react to errors. The output is still appended to the document regardless of exit code.
 
 ```bash
-$ showboat build demo.md run bash "echo hello && exit 1"
+$ showboat exec demo.md bash "echo hello && exit 1"
 hello
 $ echo $?
 1
@@ -77,13 +77,13 @@ $ echo $?
 
 ## Popping entries
 
-`showboat pop` removes the most recent entry from a document. For a `run` or `image` entry this removes both the code block and its output. For a commentary entry it removes the single commentary block.
+`showboat pop` removes the most recent entry from a document. For an `exec` or `image` entry this removes both the code block and its output. For a `note` entry it removes the single commentary block.
 
-This is useful when a build command produces an error that shouldn't remain in the document — the agent can inspect the output, decide the entry was a mistake, and pop it:
+This is useful when a command produces an error that shouldn't remain in the document — the agent can inspect the output, decide the entry was a mistake, and pop it:
 
 ```bash
 # A command fails
-showboat build demo.md run bash "some-broken-command"
+showboat exec demo.md bash "some-broken-command"
 
 # Remove the failed entry from the document
 showboat pop demo.md
@@ -96,16 +96,16 @@ showboat pop demo.md
 showboat init demo.md "Setting Up a Python Project"
 
 # Add commentary
-showboat build demo.md commentary "First, let's create a virtual environment."
+showboat note demo.md "First, let's create a virtual environment."
 
 # Run a command and capture output
-showboat build demo.md run bash "python3 -m venv .venv && echo 'Done'"
+showboat exec demo.md bash "python3 -m venv .venv && echo 'Done'"
 
 # Run Python and capture output
-showboat build demo.md run python "print('Hello from Python')"
+showboat exec demo.md python "print('Hello from Python')"
 
 # Capture a screenshot
-showboat build demo.md image "python screenshot.py http://localhost:8000"
+showboat image demo.md "python screenshot.py http://localhost:8000"
 ```
 
 This produces a markdown file like:
@@ -144,7 +144,7 @@ showboat verify demo.md
 
 ## Extracting
 
-`showboat extract` emits the sequence of `showboat init` and `showboat build` commands that would recreate a document from scratch:
+`showboat extract` emits the sequence of commands that would recreate a document from scratch:
 
 ```bash
 showboat extract demo.md
@@ -154,9 +154,9 @@ For the example above this would output:
 
 ```
 showboat init demo.md 'Setting Up a Python Project'
-showboat build demo.md commentary 'First, let'\''s create a virtual environment.'
-showboat build demo.md run bash 'python3 -m venv .venv && echo '\''Done'\'''
-showboat build demo.md run python 'print('\''Hello from Python'\'')'
+showboat note demo.md 'First, let'\''s create a virtual environment.'
+showboat exec demo.md bash 'python3 -m venv .venv && echo '\''Done'\'''
+showboat exec demo.md python 'print('\''Hello from Python'\'')'
 ```
 
 By default the commands reference the original filename. Use `--filename` to substitute a different filename in the emitted commands:

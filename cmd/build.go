@@ -10,8 +10,8 @@ import (
 	"github.com/simonw/showboat/markdown"
 )
 
-// BuildCommentary appends a commentary block to an existing showboat document.
-func BuildCommentary(file, text string) error {
+// Note appends a commentary block to an existing showboat document.
+func Note(file, text string) error {
 	blocks, err := readBlocks(file)
 	if err != nil {
 		return err
@@ -22,9 +22,9 @@ func BuildCommentary(file, text string) error {
 	return writeBlocks(file, blocks)
 }
 
-// BuildRun appends a code block, executes it, and appends the output.
+// Exec appends a code block, executes it, and appends the output.
 // It returns the captured output, the process exit code, and any error.
-func BuildRun(file, lang, code, workdir string) (string, int, error) {
+func Exec(file, lang, code, workdir string) (string, int, error) {
 	if _, err := os.Stat(file); err != nil {
 		return "", 1, fmt.Errorf("file not found: %s", file)
 	}
@@ -51,8 +51,8 @@ func BuildRun(file, lang, code, workdir string) (string, int, error) {
 	return output, exitCode, nil
 }
 
-// BuildImage appends an image code block, runs the script, captures the image.
-func BuildImage(file, script, workdir string) error {
+// Image appends an image code block, runs the script, captures the image.
+func Image(file, script, workdir string) error {
 	if _, err := os.Stat(file); err != nil {
 		return fmt.Errorf("file not found: %s", file)
 	}
