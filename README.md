@@ -156,13 +156,19 @@ Resulting markdown format:
   Done
   ```
 
-  ```python
+  ```python3
   print('Hello from Python')
   ```
 
   ```output
   Hello from Python
   ```
+
+  ```bash
+  python screenshot.py http://localhost:8000
+  ```
+
+  ![screenshot](screenshot.png)
 ```
 <!-- [[[end]]] -->
 
