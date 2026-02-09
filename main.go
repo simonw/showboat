@@ -1,12 +1,16 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/simonw/showboat/cmd"
 )
+
+//go:embed help.txt
+var helpText string
 
 var version = "dev"
 
@@ -183,95 +187,5 @@ func getTextArg(args []string) (string, error) {
 }
 
 func printUsage() {
-	fmt.Print(`showboat - Create executable demo documents that show and prove an agent's work.
-
-Showboat helps agents build markdown documents that mix commentary, executable
-code blocks, and captured output. These documents serve as both readable
-documentation and reproducible proof of work. A verifier can re-execute all
-code blocks and confirm the outputs still match.
-
-Usage:
-  showboat init <file> <title>             Create a new demo document
-  showboat note <file> [text]              Append commentary (text or stdin)
-  showboat exec <file> <lang> [code]       Run code and capture output
-  showboat image <file> [script]           Run script, capture image output
-  showboat pop <file>                      Remove the most recent entry
-  showboat verify <file> [--output <new>]  Re-run and diff all code blocks
-  showboat extract <file> [--filename <name>]  Emit commands to recreate file
-
-Global Options:
-  --workdir <dir>   Set working directory for code execution (default: current)
-  --version         Print version and exit
-  --help, -h        Show this help message
-
-Exec output:
-  The "exec" command prints the captured shell output to stdout and exits with
-  the same exit code as the executed command. This lets agents see what happened
-  and react to errors. The output is still appended to the document regardless
-  of exit code. Use "pop" to remove a failed entry.
-
-Pop:
-  The "pop" command removes the most recent entry from a document. For an "exec"
-  or "image" entry this removes both the code block and its output. For a "note"
-  entry it removes the single commentary block. This is useful when a command
-  produces an error that shouldn't remain in the document.
-
-Stdin:
-  Commands accept input from stdin when the text/code argument is omitted.
-  For example:
-    echo "Hello world" | showboat note demo.md
-    cat script.sh | showboat exec demo.md bash
-
-Example:
-  # Create a demo
-  showboat init demo.md "Setting Up a Python Project"
-
-  # Add commentary
-  showboat note demo.md "First, let's create a virtual environment."
-
-  # Run a command and capture output (output is printed to stdout)
-  showboat exec demo.md bash "python3 -m venv .venv && echo 'Done'"
-
-  # Run Python and capture output
-  showboat exec demo.md python "print('Hello from Python')"
-
-  # Oops, wrong command — remove the last entry from the document
-  showboat pop demo.md
-
-  # Redo it correctly
-  showboat exec demo.md python3 "print('Hello from Python')"
-
-  # Capture a screenshot
-  showboat image demo.md "python screenshot.py http://localhost:8000"
-
-  # Verify the demo still works
-  showboat verify demo.md
-
-  # See what commands built the demo
-  showboat extract demo.md
-
-Resulting markdown format:
-
-  # Setting Up a Python Project
-
-  *2026-02-06T15:30:00Z*
-
-  First, let's create a virtual environment.
-
-  ` + "```" + `bash
-  python3 -m venv .venv && echo 'Done'
-  ` + "```" + `
-
-  ` + "```" + `output
-  Done
-  ` + "```" + `
-
-  ` + "```" + `python
-  print('Hello from Python')
-  ` + "```" + `
-
-  ` + "```" + `output
-  Hello from Python
-  ` + "```" + `
-`)
+	fmt.Print(helpText)
 }
