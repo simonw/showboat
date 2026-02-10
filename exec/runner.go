@@ -29,26 +29,16 @@ func Run(lang, code, workdir, varsFile string) (string, int, error) {
 		env := os.Environ()
 		env = append(env, "SHOWBOAT_VARS="+varsFile)
 
-		// Copy the current binary to a temp dir so cells can call "showboat var"
-		if self, err := os.Executable(); err == nil {
-			tmpDir, err := os.MkdirTemp("", "showboat-path-*")
-			if err == nil {
-				// Best-effort cleanup; won't block if child spawned background processes
-				defer os.RemoveAll(tmpDir)
-
-				name := "showboat"
-				if runtime.GOOS == "windows" {
-					name = "showboat.exe"
-				}
-				dest := filepath.Join(tmpDir, name)
-				if copyBinary(self, dest) == nil {
-					pathSep := ":"
-					if runtime.GOOS == "windows" {
-						pathSep = ";"
-					}
-					prependToPath(env, tmpDir, pathSep)
-				}
+		dir, cleanup := showboatDir()
+		if cleanup != nil {
+			defer cleanup()
+		}
+		if dir != "" {
+			pathSep := ":"
+			if runtime.GOOS == "windows" {
+				pathSep = ";"
 			}
+			prependToPath(env, dir, pathSep)
 		}
 
 		cmd.Env = env
@@ -67,6 +57,62 @@ func Run(lang, code, workdir, varsFile string) (string, int, error) {
 	}
 
 	return buf.String(), 0, nil
+}
+
+// showboatDir returns a directory containing a "showboat" binary suitable
+// for prepending to PATH. It tries the cheapest option first:
+//
+//  1. If the directory containing os.Executable() already has a file named
+//     "showboat" (or "showboat.exe" on Windows), use that directory directly
+//     — no copy, no symlink, no cleanup.
+//  2. Otherwise, create a temp directory with a symlink to the binary.
+//     On Windows (where symlinks need privileges), fall back to a copy.
+//
+// Returns ("", nil) if the binary cannot be located.
+func showboatDir() (dir string, cleanup func()) {
+	self, err := os.Executable()
+	if err != nil {
+		return "", nil
+	}
+	return showboatDirFrom(self)
+}
+
+// showboatDirFrom is the testable core of showboatDir. Given the path to
+// the current binary, it returns a directory containing a "showboat" entry.
+func showboatDirFrom(self string) (dir string, cleanup func()) {
+	name := "showboat"
+	if runtime.GOOS == "windows" {
+		name = "showboat.exe"
+	}
+
+	// Fast path: the binary's own directory already contains "showboat".
+	// Covers: go install, system PATH, direct ./showboat invocation.
+	selfDir := filepath.Dir(self)
+	if _, err := os.Stat(filepath.Join(selfDir, name)); err == nil {
+		return selfDir, nil
+	}
+
+	// Slow path: create a temp dir with a link to the real binary.
+	// Covers: uvx (Python shim), go run, renamed binaries.
+	tmpDir, err := os.MkdirTemp("", "showboat-path-*")
+	if err != nil {
+		return "", nil
+	}
+	dest := filepath.Join(tmpDir, name)
+
+	// Try symlink first (free, works on Linux/macOS).
+	if os.Symlink(self, dest) == nil {
+		return tmpDir, func() { os.RemoveAll(tmpDir) }
+	}
+
+	// Symlink failed (Windows without dev mode) — fall back to copy.
+	if copyBinary(self, dest) == nil {
+		return tmpDir, func() { os.RemoveAll(tmpDir) }
+	}
+
+	// Both failed; clean up and give up.
+	os.RemoveAll(tmpDir)
+	return "", nil
 }
 
 // prependToPath adds dir to the front of the PATH entry in env (in-place).
