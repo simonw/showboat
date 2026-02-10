@@ -11,7 +11,7 @@ func TestVerifyPasses(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
@@ -32,7 +32,7 @@ func TestVerifyDetectsDrift(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
@@ -71,7 +71,7 @@ func TestVerifyWritesOutput(t *testing.T) {
 	file := filepath.Join(dir, "demo.md")
 	outputFile := filepath.Join(dir, "updated.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {

@@ -33,7 +33,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "usage: showboat init <file> <title>")
 			os.Exit(1)
 		}
-		if err := cmd.Init(args[1], args[2]); err != nil {
+		if err := cmd.Init(args[1], args[2], version); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}

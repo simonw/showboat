@@ -9,6 +9,7 @@ type Block interface {
 type TitleBlock struct {
 	Title     string
 	Timestamp string
+	Version   string
 }
 
 func (b TitleBlock) Type() string { return "title" }

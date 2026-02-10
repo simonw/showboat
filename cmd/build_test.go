@@ -11,7 +11,7 @@ func TestNote(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -33,7 +33,7 @@ func TestNoteMultiple(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -69,7 +69,7 @@ func TestExec(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -95,7 +95,7 @@ func TestExecNonZeroExit(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -121,7 +121,7 @@ func TestImage(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	if err := Init(file, "Test"); err != nil {
+	if err := Init(file, "Test", "dev"); err != nil {
 		t.Fatal(err)
 	}
 

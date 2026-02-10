@@ -8,6 +8,21 @@ import (
 func TestWriteTitle(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{
+		TitleBlock{Title: "My Demo", Timestamp: "2026-02-06T15:30:00Z", Version: "v0.3.0"},
+	}
+	err := Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "# My Demo\n\n*2026-02-06T15:30:00Z by Showboat v0.3.0*\n"
+	if buf.String() != expected {
+		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
+func TestWriteTitleNoVersion(t *testing.T) {
+	var buf strings.Builder
+	blocks := []Block{
 		TitleBlock{Title: "My Demo", Timestamp: "2026-02-06T15:30:00Z"},
 	}
 	err := Write(&buf, blocks)
@@ -116,7 +131,7 @@ func TestWriteOutputNoBackticks(t *testing.T) {
 func TestWriteFullDocument(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{
-		TitleBlock{Title: "Demo", Timestamp: "2026-02-06T00:00:00Z"},
+		TitleBlock{Title: "Demo", Timestamp: "2026-02-06T00:00:00Z", Version: "v0.3.0"},
 		CommentaryBlock{Text: "Let's begin."},
 		CodeBlock{Lang: "bash", Code: "echo hi"},
 		OutputBlock{Content: "hi\n"},
@@ -126,7 +141,7 @@ func TestWriteFullDocument(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expected := "# Demo\n\n*2026-02-06T00:00:00Z*\n\nLet's begin.\n\n```bash\necho hi\n```\n\n```output\nhi\n```\n\nDone.\n"
+	expected := "# Demo\n\n*2026-02-06T00:00:00Z by Showboat v0.3.0*\n\nLet's begin.\n\n```bash\necho hi\n```\n\n```output\nhi\n```\n\nDone.\n"
 	if buf.String() != expected {
 		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
 	}

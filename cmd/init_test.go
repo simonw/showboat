@@ -11,7 +11,7 @@ func TestInitCreatesFile(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
 
-	err := Init(file, "My Demo")
+	err := Init(file, "My Demo", "v0.3.0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,6 +28,9 @@ func TestInitCreatesFile(t *testing.T) {
 	if !strings.Contains(s, "T") && !strings.Contains(s, "Z") {
 		t.Error("expected ISO 8601 timestamp")
 	}
+	if !strings.Contains(s, "by Showboat v0.3.0") {
+		t.Errorf("expected version in dateline: %q", s)
+	}
 }
 
 func TestInitErrorsIfExists(t *testing.T) {
@@ -36,7 +39,7 @@ func TestInitErrorsIfExists(t *testing.T) {
 
 	os.WriteFile(file, []byte("existing"), 0644)
 
-	err := Init(file, "My Demo")
+	err := Init(file, "My Demo", "v0.3.0")
 	if err == nil {
 		t.Error("expected error when file exists")
 	}

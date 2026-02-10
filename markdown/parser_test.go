@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseTitle(t *testing.T) {
-	input := "# My Demo\n\n*2026-02-06T15:30:00Z*\n"
+	input := "# My Demo\n\n*2026-02-06T15:30:00Z by Showboat v0.3.0*\n"
 	blocks, err := Parse(strings.NewReader(input))
 	if err != nil {
 		t.Fatal(err)
@@ -24,10 +24,34 @@ func TestParseTitle(t *testing.T) {
 	if tb.Timestamp != "2026-02-06T15:30:00Z" {
 		t.Errorf("expected timestamp '2026-02-06T15:30:00Z', got %q", tb.Timestamp)
 	}
+	if tb.Version != "v0.3.0" {
+		t.Errorf("expected version 'v0.3.0', got %q", tb.Version)
+	}
+}
+
+func TestParseTitleNoVersion(t *testing.T) {
+	input := "# My Demo\n\n*2026-02-06T15:30:00Z*\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	tb, ok := blocks[0].(TitleBlock)
+	if !ok {
+		t.Fatalf("expected TitleBlock, got %T", blocks[0])
+	}
+	if tb.Timestamp != "2026-02-06T15:30:00Z" {
+		t.Errorf("expected timestamp '2026-02-06T15:30:00Z', got %q", tb.Timestamp)
+	}
+	if tb.Version != "" {
+		t.Errorf("expected empty version, got %q", tb.Version)
+	}
 }
 
 func TestParseCommentary(t *testing.T) {
-	input := "# Demo\n\n*2026-02-06T00:00:00Z*\n\nHello world.\n\nMore text here.\n"
+	input := "# Demo\n\n*2026-02-06T00:00:00Z by Showboat v0.3.0*\n\nHello world.\n\nMore text here.\n"
 	blocks, err := Parse(strings.NewReader(input))
 	if err != nil {
 		t.Fatal(err)
@@ -151,7 +175,7 @@ func TestRoundTripWithBackticksInOutput(t *testing.T) {
 }
 
 func TestRoundTrip(t *testing.T) {
-	input := "# Demo\n\n*2026-02-06T00:00:00Z*\n\nLet's begin.\n\n```bash\necho hi\n```\n\n```output\nhi\n```\n\nDone.\n"
+	input := "# Demo\n\n*2026-02-06T00:00:00Z by Showboat v0.3.0*\n\nLet's begin.\n\n```bash\necho hi\n```\n\n```output\nhi\n```\n\nDone.\n"
 	blocks, err := Parse(strings.NewReader(input))
 	if err != nil {
 		t.Fatal(err)

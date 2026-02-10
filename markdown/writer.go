@@ -24,7 +24,11 @@ func Write(w io.Writer, blocks []Block) error {
 func writeBlock(w io.Writer, block Block) error {
 	switch b := block.(type) {
 	case TitleBlock:
-		_, err := fmt.Fprintf(w, "# %s\n\n*%s*\n", b.Title, b.Timestamp)
+		dateline := b.Timestamp
+		if b.Version != "" {
+			dateline += " by Showboat " + b.Version
+		}
+		_, err := fmt.Fprintf(w, "# %s\n\n*%s*\n", b.Title, dateline)
 		return err
 	case CommentaryBlock:
 		_, err := fmt.Fprintf(w, "%s\n", b.Text)

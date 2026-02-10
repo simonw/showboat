@@ -37,13 +37,20 @@ func Parse(r io.Reader) ([]Block, error) {
 			if i < len(lines) && lines[i] == "" {
 				i++
 			}
-			// Parse timestamp: *timestamp*
+			// Parse timestamp: *timestamp* or *timestamp by Showboat version*
 			ts := ""
+			ver := ""
 			if i < len(lines) && strings.HasPrefix(lines[i], "*") && strings.HasSuffix(lines[i], "*") {
-				ts = strings.Trim(lines[i], "*")
+				dateline := strings.Trim(lines[i], "*")
+				if idx := strings.Index(dateline, " by Showboat "); idx != -1 {
+					ts = dateline[:idx]
+					ver = dateline[idx+len(" by Showboat "):]
+				} else {
+					ts = dateline
+				}
 				i++
 			}
-			blocks = append(blocks, TitleBlock{Title: title, Timestamp: ts})
+			blocks = append(blocks, TitleBlock{Title: title, Timestamp: ts, Version: ver})
 			skipSeparator()
 			continue
 		}
