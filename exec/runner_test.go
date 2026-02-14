@@ -77,3 +77,13 @@ func TestRunStderrCaptured(t *testing.T) {
 		t.Errorf("expected both 'out' and 'err' in output, got %q", output)
 	}
 }
+
+func TestRunWithEnv(t *testing.T) {
+	output, _, err := RunWithEnv("bash", "echo $MY_VAR", "", []string{"MY_VAR=hello_env"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if output != "hello_env\n" {
+		t.Errorf("expected 'hello_env\\n', got %q", output)
+	}
+}

@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	execpkg "github.com/simonw/showboat/exec"
+	"github.com/simonw/showboat/markdown"
 )
 
 func TestVerifyPasses(t *testing.T) {
@@ -118,5 +122,75 @@ func TestVerifyWritesOutput(t *testing.T) {
 	}
 	if strings.Contains(string(updatedContent), "wrong") {
 		t.Errorf("output file should not contain tampered output, got: %s", updatedContent)
+	}
+}
+
+func TestVerifyWithServerBlock(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	// Get a free port
+	port, err := execpkg.FreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Build a document with a server block and a curl block
+	blocks := []markdown.Block{
+		markdown.TitleBlock{Title: "Server Test", Timestamp: "2026-02-14T00:00:00Z", Version: "dev"},
+		markdown.CodeBlock{Lang: "bash", Code: "python3 -m http.server $PORT", IsServer: true},
+		markdown.CodeBlock{Lang: "bash", Code: fmt.Sprintf("curl -s http://localhost:%d/", port)},
+	}
+
+	f, err := os.Create(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := markdown.Write(f, blocks); err != nil {
+		f.Close()
+		t.Fatal(err)
+	}
+	f.Close()
+
+	// Verify should start the server, run the curl, and not error
+	diffs, err := Verify(file, "", "")
+	if err != nil {
+		t.Fatalf("Verify failed: %v", err)
+	}
+
+	// We don't check diffs content since the curl output is dynamic,
+	// but there should be no error (server started and was reachable)
+	_ = diffs
+}
+
+func TestVerifySkipsServerBlockExecution(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	// Build a document with a server block followed by a normal block
+	blocks := []markdown.Block{
+		markdown.TitleBlock{Title: "Test", Timestamp: "2026-02-14T00:00:00Z", Version: "dev"},
+		markdown.CodeBlock{Lang: "bash", Code: "python3 -m http.server $PORT", IsServer: true},
+		markdown.CodeBlock{Lang: "bash", Code: "echo hello"},
+		markdown.OutputBlock{Content: "hello\n"},
+	}
+
+	f, err := os.Create(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := markdown.Write(f, blocks); err != nil {
+		f.Close()
+		t.Fatal(err)
+	}
+	f.Close()
+
+	diffs, err := Verify(file, "", "")
+	if err != nil {
+		t.Fatalf("Verify failed: %v", err)
+	}
+
+	if len(diffs) != 0 {
+		t.Errorf("expected no diffs, got %d: %v", len(diffs), diffs)
 	}
 }

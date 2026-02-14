@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/simonw/showboat/markdown"
 )
 
 func TestExtract(t *testing.T) {
@@ -65,6 +68,48 @@ func TestExtractOutputOverride(t *testing.T) {
 	}
 	if strings.Contains(commands[0], file) {
 		t.Errorf("expected original filename to be replaced, got: %s", commands[0])
+	}
+}
+
+func TestExtractServerBlock(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	// Write a document with a server block
+	blocks := []markdown.Block{
+		markdown.TitleBlock{Title: "Server Demo", Timestamp: "2026-02-14T00:00:00Z", Version: "dev"},
+		markdown.CommentaryBlock{Text: "Start a server."},
+		markdown.CodeBlock{Lang: "bash", Code: "python3 -m http.server $PORT", IsServer: true},
+		markdown.CodeBlock{Lang: "bash", Code: "curl -s http://localhost:$PORT/"},
+	}
+
+	f, err := os.Create(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := markdown.Write(f, blocks); err != nil {
+		f.Close()
+		t.Fatal(err)
+	}
+	f.Close()
+
+	commands, err := Extract(file, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Should have: init, note, server, exec
+	found := false
+	for _, c := range commands {
+		if strings.Contains(c, "showboat server") {
+			found = true
+			if !strings.Contains(c, "python3 -m http.server $PORT") {
+				t.Errorf("expected server command to contain code, got: %s", c)
+			}
+		}
+	}
+	if !found {
+		t.Errorf("expected a 'showboat server' command, got: %v", commands)
 	}
 }
 

@@ -37,6 +37,8 @@ func writeBlock(w io.Writer, block Block) error {
 		lang := b.Lang
 		if b.IsImage {
 			lang += " {image}"
+		} else if b.IsServer {
+			lang += " {server}"
 		}
 		_, err := fmt.Fprintf(w, "```%s\n%s\n```\n", lang, b.Code)
 		return err

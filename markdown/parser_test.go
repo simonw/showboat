@@ -174,6 +174,49 @@ func TestRoundTripWithBackticksInOutput(t *testing.T) {
 	}
 }
 
+func TestParseServerCodeBlock(t *testing.T) {
+	input := "```bash {server}\npython3 -m http.server $PORT\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	code, ok := blocks[0].(CodeBlock)
+	if !ok {
+		t.Fatalf("expected CodeBlock, got %T", blocks[0])
+	}
+	if code.Lang != "bash" {
+		t.Errorf("expected lang 'bash', got %q", code.Lang)
+	}
+	if !code.IsServer {
+		t.Error("expected IsServer=true")
+	}
+	if code.IsImage {
+		t.Error("expected IsImage=false")
+	}
+	if code.Code != "python3 -m http.server $PORT" {
+		t.Errorf("unexpected code: %q", code.Code)
+	}
+}
+
+func TestRoundTripServerBlock(t *testing.T) {
+	input := "```bash {server}\npython3 -m http.server $PORT\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var buf strings.Builder
+	err = Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if buf.String() != input {
+		t.Errorf("round trip mismatch.\nexpected:\n%s\ngot:\n%s", input, buf.String())
+	}
+}
+
 func TestRoundTrip(t *testing.T) {
 	input := "# Demo\n\n*2026-02-06T00:00:00Z by Showboat v0.3.0*\n\nLet's begin.\n\n```bash\necho hi\n```\n\n```output\nhi\n```\n\nDone.\n"
 	blocks, err := Parse(strings.NewReader(input))

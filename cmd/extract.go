@@ -35,6 +35,8 @@ func Extract(file, outputFile string) ([]string, error) {
 		case markdown.CodeBlock:
 			if b.IsImage {
 				commands = append(commands, fmt.Sprintf("showboat image %s %s", quotedTarget, shellQuote(b.Code)))
+			} else if b.IsServer {
+				commands = append(commands, fmt.Sprintf("showboat server %s %s %s", quotedTarget, b.Lang, shellQuote(b.Code)))
 			} else {
 				commands = append(commands, fmt.Sprintf("showboat exec %s %s %s", quotedTarget, b.Lang, shellQuote(b.Code)))
 			}

@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 )
 
@@ -222,6 +223,98 @@ func TestPop(t *testing.T) {
 	if err := cmd.Run(); err == nil {
 		t.Error("expected pop to fail on title-only document")
 	}
+}
+
+func TestServerCommand(t *testing.T) {
+	tmpBin := filepath.Join(t.TempDir(), "showboat")
+	build := exec.Command("go", "build", "-o", tmpBin, ".")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build failed: %s\n%s", err, out)
+	}
+
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	// Create a document with a server block
+	run(t, tmpBin, "init", file, "Server Test")
+	run(t, tmpBin, "note", file, "Starting a server.")
+
+	// Manually write a server block into the file
+	content, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	serverDoc := string(content) + "\n```bash {server}\npython3 -m http.server $PORT\n```\n"
+	if err := os.WriteFile(file, []byte(serverDoc), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Start the server command in the background and read its stdout
+	serverCmd := exec.Command(tmpBin, "server", file)
+	stdout, err := serverCmd.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := serverCmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Read the "Server running on port ..." line
+	buf := make([]byte, 256)
+	n, err := stdout.Read(buf)
+	if err != nil {
+		serverCmd.Process.Kill()
+		serverCmd.Wait()
+		t.Fatalf("reading server output: %v", err)
+	}
+	serverOutput := string(buf[:n])
+	if !strings.Contains(serverOutput, "Server running on port") {
+		serverCmd.Process.Kill()
+		serverCmd.Wait()
+		t.Fatalf("expected 'Server running on port' output, got: %q", serverOutput)
+	}
+
+	// Kill the server process tree
+	serverCmd.Process.Signal(syscall.SIGTERM)
+	serverCmd.Wait()
+
+	// Test that extract outputs a server command for the server block
+	extractOut := runOutput(t, tmpBin, "extract", file)
+	if !strings.Contains(extractOut, "showboat server") {
+		t.Errorf("extract should include 'showboat server', got: %s", extractOut)
+	}
+
+	// Test that verify works with server blocks
+	run(t, tmpBin, "verify", file)
+}
+
+func TestVerifyWithServerIntegration(t *testing.T) {
+	tmpBin := filepath.Join(t.TempDir(), "showboat")
+	build := exec.Command("go", "build", "-o", tmpBin, ".")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build failed: %s\n%s", err, out)
+	}
+
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	// Create a document with a server block and a curl that hits it
+	doc := `# Server Verify Test
+
+*2026-02-14T00:00:00Z*
+
+` + "```bash {server}\npython3 -m http.server $PORT\n```" + `
+
+` + "```bash\ncurl -s -o /dev/null -w '%{http_code}\\n' http://localhost:$PORT/\n```" + `
+
+` + "```output\n200\n```\n"
+
+	if err := os.WriteFile(file, []byte(doc), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify should pass (server starts, curl hits it, output matches)
+	run(t, tmpBin, "verify", file)
 }
 
 func TestVersionFlagDefault(t *testing.T) {

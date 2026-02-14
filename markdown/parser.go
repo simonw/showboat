@@ -82,12 +82,16 @@ func Parse(r io.Reader) ([]Block, error) {
 				blocks = append(blocks, OutputBlock{Content: content.String()})
 
 			default:
-				// Code block. Check for {image} suffix.
+				// Code block. Check for {image} or {server} suffix.
 				lang := info
 				isImage := false
+				isServer := false
 				if strings.HasSuffix(lang, " {image}") {
 					lang = strings.TrimSuffix(lang, " {image}")
 					isImage = true
+				} else if strings.HasSuffix(lang, " {server}") {
+					lang = strings.TrimSuffix(lang, " {server}")
+					isServer = true
 				}
 				var codeLines []string
 				for i < len(lines) && lines[i] != closingFence {
@@ -96,9 +100,10 @@ func Parse(r io.Reader) ([]Block, error) {
 				}
 				i++ // past closing fence
 				blocks = append(blocks, CodeBlock{
-					Lang:    lang,
-					Code:    strings.Join(codeLines, "\n"),
-					IsImage: isImage,
+					Lang:     lang,
+					Code:     strings.Join(codeLines, "\n"),
+					IsImage:  isImage,
+					IsServer: isServer,
 				})
 			}
 

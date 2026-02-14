@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 
 	"github.com/simonw/showboat/cmd"
 )
@@ -90,19 +93,28 @@ func main() {
 
 	case "verify":
 		if len(args) < 2 {
-			fmt.Fprintln(os.Stderr, "usage: showboat verify <file> [--output <new>]")
+			fmt.Fprintln(os.Stderr, "usage: showboat verify <file> [--output <new>] [--wait-port <port>]")
 			os.Exit(1)
 		}
 		file := args[1]
 		outputFile := ""
+		waitPort := 0
 		remaining := args[2:]
 		for i := 0; i < len(remaining); i++ {
 			if remaining[i] == "--output" && i+1 < len(remaining) {
 				outputFile = remaining[i+1]
 				i++
+			} else if remaining[i] == "--wait-port" && i+1 < len(remaining) {
+				p, err := strconv.Atoi(remaining[i+1])
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "error: invalid port: %s\n", remaining[i+1])
+					os.Exit(1)
+				}
+				waitPort = p
+				i++
 			}
 		}
-		diffs, err := cmd.Verify(file, outputFile, workdir)
+		diffs, err := cmd.VerifyWithPort(file, outputFile, workdir, waitPort)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
@@ -146,6 +158,39 @@ func main() {
 		for _, c := range commands {
 			fmt.Println(c)
 		}
+
+	case "server":
+		if len(args) < 2 {
+			fmt.Fprintln(os.Stderr, "usage: showboat server <file> [--wait-port <port>]")
+			os.Exit(1)
+		}
+		serverFile := args[1]
+		waitPort := 0
+		serverRemaining := args[2:]
+		for i := 0; i < len(serverRemaining); i++ {
+			if serverRemaining[i] == "--wait-port" && i+1 < len(serverRemaining) {
+				p, err := strconv.Atoi(serverRemaining[i+1])
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "error: invalid port: %s\n", serverRemaining[i+1])
+					os.Exit(1)
+				}
+				waitPort = p
+				i++
+			}
+		}
+		proc, err := cmd.Server(serverFile, workdir, waitPort)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Server running on port %d\n", proc.Port)
+
+		// Wait for interrupt signal to stop the server
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		<-sigCh
+		fmt.Fprintln(os.Stderr, "\nStopping server...")
+		proc.Stop()
 
 	case "--help", "-h", "help":
 		printUsage()

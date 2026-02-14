@@ -23,9 +23,10 @@ func (b CommentaryBlock) Type() string { return "commentary" }
 
 // CodeBlock is an executable fenced code block.
 type CodeBlock struct {
-	Lang    string
-	Code    string
-	IsImage bool
+	Lang     string
+	Code     string
+	IsImage  bool
+	IsServer bool
 }
 
 func (b CodeBlock) Type() string { return "code" }

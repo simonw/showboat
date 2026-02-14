@@ -82,6 +82,21 @@ func TestWriteImageCodeAndOutput(t *testing.T) {
 	}
 }
 
+func TestWriteServerCodeBlock(t *testing.T) {
+	var buf strings.Builder
+	blocks := []Block{
+		CodeBlock{Lang: "bash", Code: "python3 -m http.server $PORT", IsServer: true},
+	}
+	err := Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "```bash {server}\npython3 -m http.server $PORT\n```\n"
+	if buf.String() != expected {
+		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
 func TestWriteOutputWithTripleBackticks(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{
