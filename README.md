@@ -61,7 +61,8 @@ Usage:
   showboat init <file> <title>             Create a new demo document
   showboat note <file> [text]              Append commentary (text or stdin)
   showboat exec <file> <lang> [code]       Run code and capture output
-  showboat image <file> [script]           Run script, capture image output
+  showboat image <file> <path>             Copy image into document
+  showboat image <file> '![alt](path)'   Copy image with alt text
   showboat pop <file>                      Remove the most recent entry
   showboat verify <file> [--output <new>]  Re-run and diff all code blocks
   showboat extract <file> [--filename <name>]  Emit commands to recreate file
@@ -83,9 +84,11 @@ Exec output:
     1
 
 Image:
-  The "image" command runs a script that is expected to produce an image file.
-  The image is saved in the same directory as the document and an image reference
-  is appended to the markdown. The script is recorded as a bash code block.
+  The "image" command accepts a path to an image file or a markdown image
+  reference of the form ![alt text](path). The image is copied into the same
+  directory as the document with a generated filename and an image reference is
+  appended to the markdown. When a markdown reference is provided the alt text
+  is preserved; otherwise it is derived from the generated filename.
 
 Pop:
   The "pop" command removes the most recent entry from a document. For an "exec"
@@ -131,8 +134,11 @@ Example:
   # Redo it correctly
   showboat exec demo.md python3 "print('Hello from Python')"
 
-  # Capture a screenshot
-  showboat image demo.md "python screenshot.py http://localhost:8000"
+  # Add a screenshot
+  showboat image demo.md screenshot.png
+
+  # Add a screenshot with alt text
+  showboat image demo.md '![Homepage screenshot](screenshot.png)'
 
   # Verify the demo still works
   showboat verify demo.md
@@ -164,11 +170,17 @@ Resulting markdown format:
   Hello from Python
   ```
 
-  ```bash
-  python screenshot.py http://localhost:8000
+  ```bash {image}
+  screenshot.png
   ```
 
   ![screenshot](screenshot.png)
+
+  ```bash {image}
+  ![Homepage screenshot](screenshot.png)
+  ```
+
+  ![Homepage screenshot](screenshot.png)
 ````
 <!-- [[[end]]] -->
 
@@ -187,8 +199,11 @@ showboat exec demo.md bash "python3 -m venv .venv && echo 'Done'"
 # Run Python and capture output
 showboat exec demo.md python "print('Hello from Python')"
 
-# Capture a screenshot
-showboat image demo.md "python screenshot.py http://localhost:8000"
+# Add a screenshot
+showboat image demo.md screenshot.png
+
+# Add a screenshot with alt text
+showboat image demo.md '![Homepage screenshot](screenshot.png)'
 ```
 
 This produces a markdown file like:
