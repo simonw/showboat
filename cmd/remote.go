@@ -91,10 +91,8 @@ func postImage(uuid string, blocks []markdown.Block, imagePath string) {
 	writer.WriteField("command", "image")
 
 	for _, b := range blocks {
-		switch blk := b.(type) {
-		case markdown.CodeBlock:
-			writer.WriteField("input", blk.Code)
-		case markdown.ImageOutputBlock:
+		if blk, ok := b.(markdown.ImageOutputBlock); ok {
+			writer.WriteField("filename", blk.Filename)
 			writer.WriteField("alt", blk.AltText)
 		}
 	}

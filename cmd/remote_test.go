@@ -196,6 +196,12 @@ func TestPostImageSendsMultipart(t *testing.T) {
 	if !strings.Contains(gotBody, "image") {
 		t.Errorf("expected command=image in body, got %q", gotBody)
 	}
+	if !strings.Contains(gotBody, "filename") {
+		t.Errorf("expected filename field in body, got %q", gotBody)
+	}
+	if strings.Contains(gotBody, "\"input\"") || strings.Contains(gotBody, "name=\"input\"") {
+		t.Errorf("expected no input field in body, got %q", gotBody)
+	}
 }
 
 func TestDocumentID(t *testing.T) {
