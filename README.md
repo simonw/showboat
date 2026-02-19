@@ -11,7 +11,7 @@ Showboat helps agents build markdown documents that mix commentary, executable c
 
 ## Example
 
-Here's [an example Showboat demo document](https://github.com/simonw/showboat-demos/blob/main/shot-scraper/README.md) that demonstrates [shot-scraper](https://github.com/shot-scraper). It was created by Claude Code, as shown by [this transcript](https://gisthost.github.io/?29b0d0ebef50c57e7985a6004aad01c4/page-001.html#msg-2026-02-06T07-33-41-296Z).
+Here's [an example Showboat demo document](https://github.com/simonw/showboat-demos/blob/main/shot-scraper/README.md) that demonstrates [shot-scraper](https://github.com/simonw/shot-scraper). It was created by Claude Code, as shown by [this transcript](https://gisthost.github.io/?29b0d0ebef50c57e7985a6004aad01c4/page-001.html#msg-2026-02-06T07-33-41-296Z).
 
 ## Installation
 
