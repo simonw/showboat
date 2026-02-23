@@ -304,6 +304,8 @@ func TestParseImageInput(t *testing.T) {
 		{"![Screenshot of homepage](shot.png)", "shot.png", "Screenshot of homepage"},
 		{"  ![padded](file.png)  ", "file.png", "padded"},
 		{"not-markdown.png", "not-markdown.png", ""},
+		{`\![escaped](file.png)`, "file.png", "escaped"},
+		{`\![alt text](/path/to/img.png)`, "/path/to/img.png", "alt text"},
 	}
 	for _, tt := range tests {
 		path, alt := parseImageInput(tt.input)
@@ -313,6 +315,36 @@ func TestParseImageInput(t *testing.T) {
 		if alt != tt.altText {
 			t.Errorf("parseImageInput(%q): altText = %q, want %q", tt.input, alt, tt.altText)
 		}
+	}
+}
+
+func TestImageMarkdownRefEscapedBang(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+
+	pngPath := filepath.Join(dir, "test.png")
+	if err := os.WriteFile(pngPath, minimalPNG, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	input := `\![My screenshot](` + pngPath + ")"
+
+	if err := Image(file, input, ""); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := string(content)
+	if !strings.Contains(s, "![My screenshot](") {
+		t.Errorf("expected alt text 'My screenshot' in image output, got: %s", s)
 	}
 }
 

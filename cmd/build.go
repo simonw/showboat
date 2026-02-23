@@ -110,8 +110,13 @@ func Image(file, input, workdir string) error {
 // parseImageInput checks whether input is a markdown image reference
 // (![alt](path)) or a plain file path. It returns the image path and any
 // extracted alt text (empty when the input is a plain path).
+// It also handles the common case where the shell escapes "!" to "\!".
 func parseImageInput(input string) (path, altText string) {
 	trimmed := strings.TrimSpace(input)
+	// Some shells escape "!" to "\!", so strip the leading backslash.
+	if strings.HasPrefix(trimmed, `\![`) {
+		trimmed = trimmed[1:]
+	}
 	if strings.HasPrefix(trimmed, "![") && strings.HasSuffix(trimmed, ")") {
 		// Extract alt text between ![ and ]
 		rest := trimmed[2:]
