@@ -18,6 +18,7 @@ var validImageExts = map[string]bool{
 	".jpeg": true,
 	".gif":  true,
 	".svg":  true,
+	".webp": true,
 }
 
 // CopyImage copies an image file to destDir with a generated
