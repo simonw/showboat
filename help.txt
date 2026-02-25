@@ -8,7 +8,8 @@ code blocks and confirm the outputs still match.
 Usage:
   showboat init <file> <title>             Create a new demo document
   showboat note <file> [text]              Append commentary (text or stdin)
-  showboat exec <file> <lang> [code]       Run code and capture output
+  showboat exec <file> <lang> [--output-lang <lang>] [code]
+                                           Run code and capture output
   showboat image <file> <path>             Copy image into document
   showboat image <file> '![alt](path)'   Copy image with alt text
   showboat pop <file>                      Remove the most recent entry
@@ -30,6 +31,11 @@ Exec output:
     hello
     $ echo $?
     1
+
+  Use --output-lang to set the fence language on the output block. This is
+  useful when the output is source code (e.g. reading a file with cat):
+
+    $ showboat exec demo.md bash --output-lang go "cat main.go"
 
 Image:
   The "image" command accepts a path to an image file or a markdown image

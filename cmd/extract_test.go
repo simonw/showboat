@@ -16,7 +16,7 @@ func TestExtract(t *testing.T) {
 	if err := Note(file, "Hello world"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", "", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -40,6 +40,31 @@ func TestExtract(t *testing.T) {
 	}
 	if !strings.Contains(commands[2], "showboat exec") {
 		t.Errorf("expected exec command, got: %s", commands[2])
+	}
+}
+
+func TestExtractWithOutputLang(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := Exec(file, "bash", "cat main.go", "", "go"); err != nil {
+		t.Fatal(err)
+	}
+
+	commands, err := Extract(file, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(commands) != 2 {
+		t.Fatalf("expected 2 commands, got %d: %v", len(commands), commands)
+	}
+
+	if !strings.Contains(commands[1], "--output-lang go") {
+		t.Errorf("expected exec command to contain --output-lang go, got: %s", commands[1])
 	}
 }
 

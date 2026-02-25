@@ -55,15 +55,26 @@ func main() {
 
 	case "exec":
 		if len(args) < 3 {
-			fmt.Fprintln(os.Stderr, "usage: showboat exec <file> <lang> [code]")
+			fmt.Fprintln(os.Stderr, "usage: showboat exec <file> <lang> [--output-lang <lang>] [code]")
 			os.Exit(1)
 		}
-		code, err := getTextArg(args[3:])
+		file := args[1]
+		lang := args[2]
+		outputLang := ""
+		remaining := args[3:]
+		for i := 0; i < len(remaining); i++ {
+			if remaining[i] == "--output-lang" && i+1 < len(remaining) {
+				outputLang = remaining[i+1]
+				remaining = append(remaining[:i], remaining[i+2:]...)
+				break
+			}
+		}
+		code, err := getTextArg(remaining)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
-		output, exitCode, err := cmd.Exec(args[1], args[2], code, workdir)
+		output, exitCode, err := cmd.Exec(file, lang, code, workdir, outputLang)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
