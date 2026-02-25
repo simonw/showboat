@@ -76,7 +76,7 @@ func TestExec(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", "", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -102,7 +102,7 @@ func TestExecNonZeroExit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "bash", "echo failing && exit 1", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo failing && exit 1", "", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -248,7 +248,7 @@ func TestExecCallsRemotePost(t *testing.T) {
 	}
 
 	gotBody = ""
-	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", "", ""); err != nil {
 		t.Fatal(err)
 	}
 

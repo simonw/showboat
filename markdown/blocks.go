@@ -32,7 +32,10 @@ type CodeBlock struct {
 func (b CodeBlock) Type() string { return "code" }
 
 // OutputBlock is captured text output from a code block.
+// When Lang is non-empty the fence uses that language for syntax
+// highlighting (e.g. ```go); otherwise it uses ```output.
 type OutputBlock struct {
+	Lang    string
 	Content string
 }
 

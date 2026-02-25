@@ -49,7 +49,11 @@ func writeBlock(w io.Writer, block Block) error {
 		return err
 	case OutputBlock:
 		fence := fenceFor(b.Content)
-		_, err := fmt.Fprintf(w, "%soutput\n%s%s\n", fence, b.Content, fence)
+		lang := b.Lang
+		if lang == "" {
+			lang = "output"
+		}
+		_, err := fmt.Fprintf(w, "%s%s\n%s%s\n", fence, lang, b.Content, fence)
 		return err
 	case ImageOutputBlock:
 		_, err := fmt.Fprintf(w, "![%s](%s)\n", b.AltText, b.Filename)

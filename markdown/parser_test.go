@@ -93,6 +93,52 @@ func TestParseCodeAndOutput(t *testing.T) {
 	}
 }
 
+func TestParseOutputWithLang(t *testing.T) {
+	// When --output-lang is used, the output block has a language instead of "output".
+	// The parser identifies it as output by position (after a code block).
+	input := "```bash\ncat main.go\n```\n\n```go\npackage main\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 2 {
+		t.Fatalf("expected 2 blocks, got %d", len(blocks))
+	}
+	code, ok := blocks[0].(CodeBlock)
+	if !ok {
+		t.Fatalf("expected CodeBlock, got %T", blocks[0])
+	}
+	if code.Lang != "bash" {
+		t.Errorf("expected Lang 'bash', got %q", code.Lang)
+	}
+	out, ok := blocks[1].(OutputBlock)
+	if !ok {
+		t.Fatalf("expected OutputBlock, got %T", blocks[1])
+	}
+	if out.Lang != "go" {
+		t.Errorf("expected output Lang 'go', got %q", out.Lang)
+	}
+	if out.Content != "package main\n" {
+		t.Errorf("unexpected output: %q", out.Content)
+	}
+}
+
+func TestRoundTripOutputWithLang(t *testing.T) {
+	input := "```bash\ncat main.go\n```\n\n```go\npackage main\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var buf strings.Builder
+	err = Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if buf.String() != input {
+		t.Errorf("round trip mismatch.\nexpected:\n%s\ngot:\n%s", input, buf.String())
+	}
+}
+
 func TestParseImageCodeAndOutput(t *testing.T) {
 	input := "```bash {image}\npython screenshot.py\n```\n\n![Screenshot](abc-2026-02-06.png)\n"
 	blocks, err := Parse(strings.NewReader(input))

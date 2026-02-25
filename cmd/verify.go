@@ -57,7 +57,7 @@ func Verify(file, outputFile, workdir string) ([]Diff, error) {
 						Actual:     output,
 					})
 					// Update the block for the output copy
-					blocks[i+1] = markdown.OutputBlock{Content: output}
+					blocks[i+1] = markdown.OutputBlock{Lang: ob.Lang, Content: output}
 				}
 			}
 		}

@@ -32,8 +32,10 @@ func Note(file, text string) error {
 }
 
 // Exec appends a code block, executes it, and appends the output.
+// When outputLang is non-empty the output block uses that language for its
+// fence info string (e.g. ```go) instead of the default ```output.
 // It returns the captured output, the process exit code, and any error.
-func Exec(file, lang, code, workdir string) (string, int, error) {
+func Exec(file, lang, code, workdir, outputLang string) (string, int, error) {
 	if _, err := os.Stat(file); err != nil {
 		return "", 1, fmt.Errorf("file not found: %s", file)
 	}
@@ -49,7 +51,7 @@ func Exec(file, lang, code, workdir string) (string, int, error) {
 	}
 
 	codeBlock := markdown.CodeBlock{Lang: lang, Code: code}
-	outputBlock := markdown.OutputBlock{Content: output}
+	outputBlock := markdown.OutputBlock{Lang: outputLang, Content: output}
 	blocks = append(blocks, codeBlock, outputBlock)
 
 	if err := writeBlocks(file, blocks); err != nil {

@@ -158,6 +158,22 @@ func TestWriteTitleWithDocumentIDNoVersion(t *testing.T) {
 	}
 }
 
+func TestWriteOutputWithLang(t *testing.T) {
+	var buf strings.Builder
+	blocks := []Block{
+		CodeBlock{Lang: "bash", Code: "cat main.go"},
+		OutputBlock{Lang: "go", Content: "package main\n"},
+	}
+	err := Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "```bash\ncat main.go\n```\n\n```go\npackage main\n```\n"
+	if buf.String() != expected {
+		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
 func TestWriteFullDocument(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{

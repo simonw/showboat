@@ -20,6 +20,7 @@ func Parse(r io.Reader) ([]Block, error) {
 
 	var blocks []Block
 	i := 0
+	expectOutput := false // true after a non-image code block
 
 	// skipSeparator consumes a single blank line between blocks.
 	skipSeparator := func() {
@@ -77,8 +78,9 @@ func Parse(r io.Reader) ([]Block, error) {
 			info := lines[i][fenceTicks:]
 			i++ // past opening fence
 
-			switch {
-			case info == "output":
+			if info == "output" || expectOutput {
+				// Output block: identified by "output" info string or
+				// by position immediately after a non-image code block.
 				var content strings.Builder
 				for i < len(lines) && lines[i] != closingFence {
 					content.WriteString(lines[i])
@@ -86,9 +88,13 @@ func Parse(r io.Reader) ([]Block, error) {
 					i++
 				}
 				i++ // past closing fence
-				blocks = append(blocks, OutputBlock{Content: content.String()})
-
-			default:
+				lang := info
+				if lang == "output" {
+					lang = ""
+				}
+				blocks = append(blocks, OutputBlock{Lang: lang, Content: content.String()})
+				expectOutput = false
+			} else {
 				// Code block. Check for {image} suffix.
 				lang := info
 				isImage := false
@@ -107,6 +113,9 @@ func Parse(r io.Reader) ([]Block, error) {
 					Code:    strings.Join(codeLines, "\n"),
 					IsImage: isImage,
 				})
+				if !isImage {
+					expectOutput = true
+				}
 			}
 
 			skipSeparator()
@@ -119,12 +128,14 @@ func Parse(r io.Reader) ([]Block, error) {
 			if filename != "" {
 				i++
 				blocks = append(blocks, ImageOutputBlock{AltText: alt, Filename: filename})
+				expectOutput = false
 				skipSeparator()
 				continue
 			}
 		}
 
 		// Commentary block: accumulate lines until a fence, image output, or EOF.
+		expectOutput = false
 		var textLines []string
 		for i < len(lines) {
 			if strings.HasPrefix(lines[i], "```") {
