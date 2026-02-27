@@ -42,6 +42,9 @@ func writeBlock(w io.Writer, block Block) error {
 		return err
 	case CodeBlock:
 		lang := b.Lang
+		if b.Filter != "" {
+			lang += " {filter=" + b.Filter + "}"
+		}
 		if b.IsImage {
 			lang += " {image}"
 		}

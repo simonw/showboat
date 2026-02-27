@@ -67,7 +67,7 @@ func Exec(opts ExecOpts) (string, int, error) {
 		return "", exitCode, err
 	}
 
-	codeBlock := markdown.CodeBlock{Lang: opts.Lang, Code: opts.Code}
+	codeBlock := markdown.CodeBlock{Lang: opts.Lang, Code: opts.Code, Filter: opts.Filter}
 	outputBlock := markdown.OutputBlock{Content: output}
 	blocks = append(blocks, codeBlock, outputBlock)
 

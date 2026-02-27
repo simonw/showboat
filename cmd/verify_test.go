@@ -66,6 +66,27 @@ func TestVerifyDetectsDrift(t *testing.T) {
 	}
 }
 
+func TestVerifyWithFilter(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "python", Code: "hello\n", Filter: "cat"}); err != nil {
+		t.Fatal(err)
+	}
+
+	diffs, err := Verify(file, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(diffs) != 0 {
+		t.Errorf("expected no diffs, got %d: %v", len(diffs), diffs)
+	}
+}
+
 func TestVerifyWritesOutput(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")

@@ -112,8 +112,8 @@ func TestExecWithFilter(t *testing.T) {
 	}
 
 	s := string(content)
-	if !strings.Contains(s, "```python\n1 + 1\n```") {
-		t.Errorf("expected python code block in file, got: %s", s)
+	if !strings.Contains(s, "```python {filter=bash -c 'echo result: $(cat)'}\n1 + 1\n```") {
+		t.Errorf("expected python code block with filter attribute in file, got: %s", s)
 	}
 	if !strings.Contains(s, "```output\nresult: 1 + 1\n```") {
 		t.Errorf("expected output block with filter output in file, got: %s", s)
