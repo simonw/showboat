@@ -33,12 +33,22 @@ func Note(file, text string) error {
 
 // Exec appends a code block, executes it, and appends the output.
 // It returns the captured output, the process exit code, and any error.
-func Exec(file, lang, code, workdir string) (string, int, error) {
+// When filter is non-empty the code is passed to the filter via stdin rather
+// than being executed directly; the code block in the report still shows the
+// original lang and code, hiding the filter invocation from the output.
+func Exec(file, lang, code, filter, workdir string) (string, int, error) {
 	if _, err := os.Stat(file); err != nil {
 		return "", 1, fmt.Errorf("file not found: %s", file)
 	}
 
-	output, exitCode, err := execpkg.Run(lang, code, workdir)
+	var output string
+	var exitCode int
+	var err error
+	if filter != "" {
+		output, exitCode, err = execpkg.RunWithFilter(filter, code, workdir)
+	} else {
+		output, exitCode, err = execpkg.Run(lang, code, workdir)
+	}
 	if err != nil {
 		return "", exitCode, fmt.Errorf("running code: %w", err)
 	}

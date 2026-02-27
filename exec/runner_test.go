@@ -77,3 +77,46 @@ func TestRunStderrCaptured(t *testing.T) {
 		t.Errorf("expected both 'out' and 'err' in output, got %q", output)
 	}
 }
+
+func TestRunWithFilter(t *testing.T) {
+	output, exitCode, err := RunWithFilter("cat", "hello from stdin", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 0 {
+		t.Errorf("expected exit code 0, got %d", exitCode)
+	}
+	if output != "hello from stdin" {
+		t.Errorf("expected 'hello from stdin', got %q", output)
+	}
+}
+
+func TestRunWithFilterTransforms(t *testing.T) {
+	output, _, err := RunWithFilter("tr a-z A-Z", "hello", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if output != "HELLO" {
+		t.Errorf("expected 'HELLO', got %q", output)
+	}
+}
+
+func TestRunWithFilterNonZeroExit(t *testing.T) {
+	_, exitCode, err := RunWithFilter("bash -c 'cat; exit 3'", "data", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 3 {
+		t.Errorf("expected exit code 3, got %d", exitCode)
+	}
+}
+
+func TestRunWithFilterWorkdir(t *testing.T) {
+	output, _, err := RunWithFilter("bash -c 'cat; pwd'", "input\n", "/tmp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output, "/tmp") {
+		t.Errorf("expected /tmp in output, got %q", output)
+	}
+}

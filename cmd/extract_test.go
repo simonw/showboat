@@ -16,7 +16,7 @@ func TestExtract(t *testing.T) {
 	if err := Note(file, "Hello world"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(file, "bash", "echo hello", "", ""); err != nil {
 		t.Fatal(err)
 	}
 
