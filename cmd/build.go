@@ -31,28 +31,47 @@ func Note(file, text string) error {
 	return nil
 }
 
+// ExecOpts configures an Exec invocation.
+type ExecOpts struct {
+	File    string // path to the showboat document
+	Lang    string // language label for the code block
+	Code    string // code to execute (or pipe to filter)
+	Filter  string // if non-empty, pipe code to this shell command instead of executing directly
+	Workdir string // working directory; empty means current directory
+}
+
 // Exec appends a code block, executes it, and appends the output.
 // It returns the captured output, the process exit code, and any error.
-func Exec(file, lang, code, workdir string) (string, int, error) {
-	if _, err := os.Stat(file); err != nil {
-		return "", 1, fmt.Errorf("file not found: %s", file)
+// When Filter is non-empty the code is passed to the filter via stdin rather
+// than being executed directly; the code block in the report still shows the
+// original lang and code, hiding the filter invocation from the output.
+func Exec(opts ExecOpts) (string, int, error) {
+	if _, err := os.Stat(opts.File); err != nil {
+		return "", 1, fmt.Errorf("file not found: %s", opts.File)
 	}
 
-	output, exitCode, err := execpkg.Run(lang, code, workdir)
+	var output string
+	var exitCode int
+	var err error
+	if opts.Filter != "" {
+		output, exitCode, err = execpkg.RunWithFilter(opts.Filter, opts.Code, opts.Workdir)
+	} else {
+		output, exitCode, err = execpkg.Run(opts.Lang, opts.Code, opts.Workdir)
+	}
 	if err != nil {
 		return "", exitCode, fmt.Errorf("running code: %w", err)
 	}
 
-	blocks, err := readBlocks(file)
+	blocks, err := readBlocks(opts.File)
 	if err != nil {
 		return "", exitCode, err
 	}
 
-	codeBlock := markdown.CodeBlock{Lang: lang, Code: code}
+	codeBlock := markdown.CodeBlock{Lang: opts.Lang, Code: opts.Code, Filter: opts.Filter}
 	outputBlock := markdown.OutputBlock{Content: output}
 	blocks = append(blocks, codeBlock, outputBlock)
 
-	if err := writeBlocks(file, blocks); err != nil {
+	if err := writeBlocks(opts.File, blocks); err != nil {
 		return output, exitCode, err
 	}
 

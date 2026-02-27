@@ -82,6 +82,22 @@ func TestWriteImageCodeAndOutput(t *testing.T) {
 	}
 }
 
+func TestWriteCodeWithFilter(t *testing.T) {
+	var buf strings.Builder
+	blocks := []Block{
+		CodeBlock{Lang: "python", Code: "1 + 1", Filter: "jupyter-kernel-eval"},
+		OutputBlock{Content: "2\n"},
+	}
+	err := Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "```python {filter=jupyter-kernel-eval}\n1 + 1\n```\n\n```output\n2\n```\n"
+	if buf.String() != expected {
+		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
 func TestWriteOutputWithTripleBackticks(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{

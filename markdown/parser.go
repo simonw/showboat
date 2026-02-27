@@ -89,12 +89,20 @@ func Parse(r io.Reader) ([]Block, error) {
 				blocks = append(blocks, OutputBlock{Content: content.String()})
 
 			default:
-				// Code block. Check for {image} suffix.
+				// Code block. Extract {image} and {filter=...} suffixes.
 				lang := info
 				isImage := false
+				filter := ""
 				if strings.HasSuffix(lang, " {image}") {
 					lang = strings.TrimSuffix(lang, " {image}")
 					isImage = true
+				}
+				if idx := strings.Index(lang, " {filter="); idx != -1 {
+					suffix := lang[idx+len(" {filter="):]
+					if end := strings.Index(suffix, "}"); end != -1 {
+						filter = suffix[:end]
+						lang = lang[:idx] + suffix[end+1:]
+					}
 				}
 				var codeLines []string
 				for i < len(lines) && lines[i] != closingFence {
@@ -106,6 +114,7 @@ func Parse(r io.Reader) ([]Block, error) {
 					Lang:    lang,
 					Code:    strings.Join(codeLines, "\n"),
 					IsImage: isImage,
+					Filter:  filter,
 				})
 			}
 

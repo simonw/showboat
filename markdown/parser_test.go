@@ -118,6 +118,70 @@ func TestParseImageCodeAndOutput(t *testing.T) {
 	}
 }
 
+func TestParseCodeBlockWithFilter(t *testing.T) {
+	input := "```python {filter=jupyter-kernel-eval}\n1 + 1\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	code, ok := blocks[0].(CodeBlock)
+	if !ok {
+		t.Fatalf("expected CodeBlock, got %T", blocks[0])
+	}
+	if code.Lang != "python" {
+		t.Errorf("expected lang 'python', got %q", code.Lang)
+	}
+	if code.Filter != "jupyter-kernel-eval" {
+		t.Errorf("expected filter 'jupyter-kernel-eval', got %q", code.Filter)
+	}
+	if code.Code != "1 + 1" {
+		t.Errorf("expected code '1 + 1', got %q", code.Code)
+	}
+}
+
+func TestParseCodeBlockWithFilterAndImage(t *testing.T) {
+	input := "```bash {filter=my-tool} {image}\nscreenshot\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	code, ok := blocks[0].(CodeBlock)
+	if !ok {
+		t.Fatalf("expected CodeBlock, got %T", blocks[0])
+	}
+	if code.Lang != "bash" {
+		t.Errorf("expected lang 'bash', got %q", code.Lang)
+	}
+	if code.Filter != "my-tool" {
+		t.Errorf("expected filter 'my-tool', got %q", code.Filter)
+	}
+	if !code.IsImage {
+		t.Error("expected IsImage=true")
+	}
+}
+
+func TestRoundTripWithFilter(t *testing.T) {
+	input := "```python {filter=jupyter-kernel-eval}\n1 + 1\n```\n\n```output\n2\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var buf strings.Builder
+	err = Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if buf.String() != input {
+		t.Errorf("round trip mismatch.\nexpected:\n%s\ngot:\n%s", input, buf.String())
+	}
+}
+
 func TestParseOutputWithLongerFence(t *testing.T) {
 	input := "````output\n```bash\necho hello\n```\n````\n"
 	blocks, err := Parse(strings.NewReader(input))

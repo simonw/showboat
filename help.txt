@@ -8,7 +8,7 @@ code blocks and confirm the outputs still match.
 Usage:
   showboat init <file> <title>             Create a new demo document
   showboat note <file> [text]              Append commentary (text or stdin)
-  showboat exec <file> <lang> [code]       Run code and capture output
+  showboat exec <file> <lang> [--filter <cmd>] [code]  Run code and capture output
   showboat image <file> <path>             Copy image into document
   showboat image <file> '![alt](path)'   Copy image with alt text
   showboat pop <file>                      Remove the most recent entry
@@ -30,6 +30,19 @@ Exec output:
     hello
     $ echo $?
     1
+
+Exec filter:
+  The --filter option pipes the code to an external command via stdin instead
+  of executing it directly. The code block in the report still shows the
+  original lang and code; the filter invocation is hidden. This is useful when
+  the execution mechanism is incidental — for example, evaluating Python code
+  via a Jupyter kernel where the report should show clean Python, not the
+  tool invocation:
+
+    $ showboat exec demo.md python --filter "jupyter-kernel-eval" "1 + 1"
+
+  The report gets a python code block containing "1 + 1" and an output
+  block containing the result. jupyter-kernel-eval never appears in the document.
 
 Image:
   The "image" command accepts a path to an image file or a markdown image

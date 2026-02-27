@@ -27,6 +27,7 @@ type CodeBlock struct {
 	Lang    string
 	Code    string
 	IsImage bool
+	Filter  string // if non-empty, code is piped to this shell command instead of executed directly
 }
 
 func (b CodeBlock) Type() string { return "code" }

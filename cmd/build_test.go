@@ -76,7 +76,7 @@ func TestExec(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "bash", Code: "echo hello"}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -94,6 +94,32 @@ func TestExec(t *testing.T) {
 	}
 }
 
+func TestExecWithFilter(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "python", Code: "1 + 1", Filter: "bash -c 'echo result: $(cat)'"}); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := string(content)
+	if !strings.Contains(s, "```python {filter=bash -c 'echo result: $(cat)'}\n1 + 1\n```") {
+		t.Errorf("expected python code block with filter attribute in file, got: %s", s)
+	}
+	if !strings.Contains(s, "```output\nresult: 1 + 1\n```") {
+		t.Errorf("expected output block with filter output in file, got: %s", s)
+	}
+}
+
 func TestExecNonZeroExit(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")
@@ -102,7 +128,7 @@ func TestExecNonZeroExit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "bash", "echo failing && exit 1", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "bash", Code: "echo failing && exit 1"}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -248,7 +274,7 @@ func TestExecCallsRemotePost(t *testing.T) {
 	}
 
 	gotBody = ""
-	if _, _, err := Exec(file, "bash", "echo hello", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "bash", Code: "echo hello"}); err != nil {
 		t.Fatal(err)
 	}
 

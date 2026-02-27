@@ -55,15 +55,33 @@ func main() {
 
 	case "exec":
 		if len(args) < 3 {
-			fmt.Fprintln(os.Stderr, "usage: showboat exec <file> <lang> [code]")
+			fmt.Fprintln(os.Stderr, "usage: showboat exec <file> <lang> [--filter <cmd>] [code]")
 			os.Exit(1)
 		}
-		code, err := getTextArg(args[3:])
+		execFile := args[1]
+		execLang := args[2]
+		execFilter := ""
+		var execRest []string
+		for i := 3; i < len(args); i++ {
+			if args[i] == "--filter" && i+1 < len(args) {
+				execFilter = args[i+1]
+				i++ // skip the filter value
+			} else {
+				execRest = append(execRest, args[i])
+			}
+		}
+		code, err := getTextArg(execRest)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
-		output, exitCode, err := cmd.Exec(args[1], args[2], code, workdir)
+		output, exitCode, err := cmd.Exec(cmd.ExecOpts{
+			File:    execFile,
+			Lang:    execLang,
+			Code:    code,
+			Filter:  execFilter,
+			Workdir: workdir,
+		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)

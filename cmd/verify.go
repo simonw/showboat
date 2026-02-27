@@ -42,7 +42,12 @@ func Verify(file, outputFile, workdir string) ([]Diff, error) {
 		}
 
 		// Execute the code block
-		output, _, err := execpkg.Run(cb.Lang, cb.Code, workdir)
+		var output string
+		if cb.Filter != "" {
+			output, _, err = execpkg.RunWithFilter(cb.Filter, cb.Code, workdir)
+		} else {
+			output, _, err = execpkg.Run(cb.Lang, cb.Code, workdir)
+		}
 		if err != nil {
 			return nil, fmt.Errorf("executing block %d: %w", i, err)
 		}
