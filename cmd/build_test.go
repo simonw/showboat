@@ -76,7 +76,7 @@ func TestExec(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "bash", "echo hello", "", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "bash", Code: "echo hello"}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -102,7 +102,7 @@ func TestExecWithFilter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "python", "1 + 1", "bash -c 'echo result: $(cat)'", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "python", Code: "1 + 1", Filter: "bash -c 'echo result: $(cat)'"}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -128,7 +128,7 @@ func TestExecNonZeroExit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Exec(file, "bash", "echo failing && exit 1", "", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "bash", Code: "echo failing && exit 1"}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -274,7 +274,7 @@ func TestExecCallsRemotePost(t *testing.T) {
 	}
 
 	gotBody = ""
-	if _, _, err := Exec(file, "bash", "echo hello", "", ""); err != nil {
+	if _, _, err := Exec(ExecOpts{File: file, Lang: "bash", Code: "echo hello"}); err != nil {
 		t.Fatal(err)
 	}
 

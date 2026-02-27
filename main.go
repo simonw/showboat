@@ -75,7 +75,13 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
-		output, exitCode, err := cmd.Exec(execFile, execLang, code, execFilter, workdir)
+		output, exitCode, err := cmd.Exec(cmd.ExecOpts{
+			File:    execFile,
+			Lang:    execLang,
+			Code:    code,
+			Filter:  execFilter,
+			Workdir: workdir,
+		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
