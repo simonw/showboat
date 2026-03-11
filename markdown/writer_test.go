@@ -128,6 +128,21 @@ func TestWriteOutputNoBackticks(t *testing.T) {
 	}
 }
 
+func TestWriteOutputNoTrailingNewline(t *testing.T) {
+	var buf strings.Builder
+	blocks := []Block{
+		OutputBlock{Content: "hello"},
+	}
+	err := Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "```output\nhello\n```\n"
+	if buf.String() != expected {
+		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
 func TestWriteTitleWithDocumentID(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{
