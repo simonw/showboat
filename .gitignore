@@ -1,3 +1,5 @@
 showboat
 dist
 .DS_Store
+coverage.out
+coverage_new.out
