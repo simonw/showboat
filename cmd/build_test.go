@@ -348,6 +348,97 @@ func TestImageMarkdownRefEscapedBang(t *testing.T) {
 	}
 }
 
+func TestExecFileNotFound(t *testing.T) {
+	_, _, err := Exec("/nonexistent/path/demo.md", "bash", "echo hello", "")
+	if err == nil {
+		t.Error("expected error for nonexistent file")
+	}
+	if !strings.Contains(err.Error(), "file not found") {
+		t.Errorf("expected 'file not found' error, got: %v", err)
+	}
+}
+
+func TestExecReturnsOutput(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+
+	output, exitCode, err := Exec(file, "bash", "echo hello world", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 0 {
+		t.Errorf("expected exit code 0, got %d", exitCode)
+	}
+	if !strings.Contains(output, "hello world") {
+		t.Errorf("expected output to contain 'hello world', got %q", output)
+	}
+}
+
+func TestExecReturnsNonZeroExitCode(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+
+	output, exitCode, err := Exec(file, "bash", "echo oops && exit 42", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 42 {
+		t.Errorf("expected exit code 42, got %d", exitCode)
+	}
+	if !strings.Contains(output, "oops") {
+		t.Errorf("expected output 'oops', got %q", output)
+	}
+}
+
+func TestExecWithWorkdir(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+
+	output, _, err := Exec(file, "bash", "pwd", "/tmp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output, "/tmp") {
+		t.Errorf("expected working directory /tmp in output, got %q", output)
+	}
+}
+
+func TestExecInvalidLanguage(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "demo.md")
+
+	if err := Init(file, "Test", "dev"); err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err := Exec(file, "nonexistent_lang_xyz", "code", "")
+	if err == nil {
+		t.Error("expected error for invalid language")
+	}
+}
+
+func TestImageFileNotFound(t *testing.T) {
+	err := Image("/nonexistent/path/demo.md", "img.png", "")
+	if err == nil {
+		t.Error("expected error for nonexistent document file")
+	}
+	if !strings.Contains(err.Error(), "file not found") {
+		t.Errorf("expected 'file not found' error, got: %v", err)
+	}
+}
+
 func TestImageMarkdownRefBadPath(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "demo.md")

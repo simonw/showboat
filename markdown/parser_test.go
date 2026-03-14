@@ -257,6 +257,113 @@ func TestRoundTripWithDocumentID(t *testing.T) {
 	}
 }
 
+func TestParseEmptyInput(t *testing.T) {
+	blocks, err := Parse(strings.NewReader(""))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 0 {
+		t.Errorf("expected 0 blocks for empty input, got %d", len(blocks))
+	}
+}
+
+func TestParseCommentaryOnly(t *testing.T) {
+	input := "Just some plain text.\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	cb, ok := blocks[0].(CommentaryBlock)
+	if !ok {
+		t.Fatalf("expected CommentaryBlock, got %T", blocks[0])
+	}
+	if cb.Text != "Just some plain text." {
+		t.Errorf("unexpected text: %q", cb.Text)
+	}
+}
+
+func TestParseMultipleCommentaryBlocksSeparatedByCode(t *testing.T) {
+	input := "First paragraph.\n\n```bash\necho hi\n```\n\nSecond paragraph.\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 3 {
+		t.Fatalf("expected 3 blocks, got %d: %+v", len(blocks), blocks)
+	}
+	if _, ok := blocks[0].(CommentaryBlock); !ok {
+		t.Errorf("expected CommentaryBlock at 0, got %T", blocks[0])
+	}
+	if _, ok := blocks[1].(CodeBlock); !ok {
+		t.Errorf("expected CodeBlock at 1, got %T", blocks[1])
+	}
+	if _, ok := blocks[2].(CommentaryBlock); !ok {
+		t.Errorf("expected CommentaryBlock at 2, got %T", blocks[2])
+	}
+}
+
+func TestParseImageRefMalformed(t *testing.T) {
+	// Missing closing paren
+	alt, filename := parseImageRef("![alt](no-close-paren")
+	if filename != "" {
+		t.Errorf("expected empty filename for malformed ref, got %q", filename)
+	}
+	_ = alt
+
+	// Missing ]( separator
+	alt2, filename2 := parseImageRef("![alt text no bracket")
+	if filename2 != "" {
+		t.Errorf("expected empty filename, got %q", filename2)
+	}
+	_ = alt2
+
+	// Not an image ref at all
+	alt3, filename3 := parseImageRef("just plain text")
+	if filename3 != "" {
+		t.Errorf("expected empty filename for plain text, got %q", filename3)
+	}
+	_ = alt3
+}
+
+func TestParseCodeBlockEmptyContent(t *testing.T) {
+	input := "```bash\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	code, ok := blocks[0].(CodeBlock)
+	if !ok {
+		t.Fatalf("expected CodeBlock, got %T", blocks[0])
+	}
+	if code.Code != "" {
+		t.Errorf("expected empty code, got %q", code.Code)
+	}
+}
+
+func TestParseOutputBlockEmpty(t *testing.T) {
+	input := "```output\n```\n"
+	blocks, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(blocks) != 1 {
+		t.Fatalf("expected 1 block, got %d", len(blocks))
+	}
+	out, ok := blocks[0].(OutputBlock)
+	if !ok {
+		t.Fatalf("expected OutputBlock, got %T", blocks[0])
+	}
+	if out.Content != "" {
+		t.Errorf("expected empty output, got %q", out.Content)
+	}
+}
+
 func TestRoundTrip(t *testing.T) {
 	input := "# Demo\n\n*2026-02-06T00:00:00Z by Showboat v0.3.0*\n\nLet's begin.\n\n```bash\necho hi\n```\n\n```output\nhi\n```\n\nDone.\n"
 	blocks, err := Parse(strings.NewReader(input))

@@ -158,6 +158,53 @@ func TestWriteTitleWithDocumentIDNoVersion(t *testing.T) {
 	}
 }
 
+func TestWriteEmptyBlocks(t *testing.T) {
+	var buf strings.Builder
+	err := Write(&buf, []Block{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if buf.String() != "" {
+		t.Errorf("expected empty output, got %q", buf.String())
+	}
+}
+
+func TestWriteImageOutput(t *testing.T) {
+	var buf strings.Builder
+	blocks := []Block{
+		ImageOutputBlock{AltText: "My Image", Filename: "abc-2026-01-01.png"},
+	}
+	err := Write(&buf, blocks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "![My Image](abc-2026-01-01.png)\n"
+	if buf.String() != expected {
+		t.Errorf("expected:\n%q\ngot:\n%q", expected, buf.String())
+	}
+}
+
+func TestFenceForNoBackticks(t *testing.T) {
+	fence := fenceFor("just plain text\nno backticks here\n")
+	if fence != "```" {
+		t.Errorf("expected 3 backticks, got %q", fence)
+	}
+}
+
+func TestFenceForWithBackticks(t *testing.T) {
+	fence := fenceFor("```bash\necho hello\n```\n")
+	if fence != "````" {
+		t.Errorf("expected 4 backticks, got %q", fence)
+	}
+}
+
+func TestFenceForDeepNesting(t *testing.T) {
+	fence := fenceFor("``````deep\ncontent\n``````\n")
+	if fence != "```````" {
+		t.Errorf("expected 7 backticks, got %q", fence)
+	}
+}
+
 func TestWriteFullDocument(t *testing.T) {
 	var buf strings.Builder
 	blocks := []Block{

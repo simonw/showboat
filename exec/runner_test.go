@@ -68,6 +68,24 @@ func TestRunZeroExitCode(t *testing.T) {
 	}
 }
 
+func TestRunInvalidInterpreter(t *testing.T) {
+	_, _, err := Run("nonexistent_interpreter_xyz", "code", "")
+	if err == nil {
+		t.Error("expected error for invalid interpreter")
+	}
+}
+
+func TestRunBashWithWorkdir(t *testing.T) {
+	dir := t.TempDir()
+	output, _, err := Run("bash", "pwd", dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output, dir) {
+		t.Errorf("expected output to contain %q, got %q", dir, output)
+	}
+}
+
 func TestRunStderrCaptured(t *testing.T) {
 	output, _, err := Run("bash", "echo out && echo err >&2", "")
 	if err != nil {
