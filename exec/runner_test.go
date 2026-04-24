@@ -1,6 +1,7 @@
 package exec
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -22,6 +23,51 @@ func TestRunPython(t *testing.T) {
 	}
 	if output != "hi\n" {
 		t.Errorf("expected 'hi\\n', got %q", output)
+	}
+}
+
+func TestRunWithPipe(t *testing.T) {
+	output, exitCode, err := Run("bash", "echo hello | wc -l", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 0 {
+		t.Errorf("expected exit 0, got %d", exitCode)
+	}
+	if strings.TrimSpace(output) != "1" {
+		t.Errorf("expected '1', got %q", output)
+	}
+}
+
+func TestRunWithRedirect(t *testing.T) {
+	dir := t.TempDir()
+	outFile := dir + "/out.txt"
+	_, exitCode, err := Run("bash", "echo redirected > "+outFile, dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 0 {
+		t.Errorf("expected exit 0, got %d", exitCode)
+	}
+	data, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(string(data)) != "redirected" {
+		t.Errorf("expected 'redirected' in file, got %q", string(data))
+	}
+}
+
+func TestRunShellMetacharacters(t *testing.T) {
+	output, exitCode, err := Run("sh", "echo one && echo two", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exitCode != 0 {
+		t.Errorf("expected exit 0, got %d", exitCode)
+	}
+	if !strings.Contains(output, "one") || !strings.Contains(output, "two") {
+		t.Errorf("expected 'one' and 'two' in output, got %q", output)
 	}
 }
 

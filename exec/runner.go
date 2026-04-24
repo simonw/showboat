@@ -27,7 +27,7 @@ func Run(lang, code, workdir string) (string, int, error) {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			return buf.String(), exitErr.ExitCode(), nil
 		}
-		return "", 1, fmt.Errorf("executing %s: %w", lang, err)
+		return "", 1, fmt.Errorf("executing %q: %w", lang, err)
 	}
 
 	return buf.String(), 0, nil
